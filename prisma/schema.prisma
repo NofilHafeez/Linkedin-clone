@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  online
+  offline
+  away
+}
+
+model User {
+  id             String     @id @default(cuid())
+  name           String
+  email          String     @unique
+  password       String? 
+  bio            String?
+  profilePic     String? 
+  createdAt      DateTime   @default(now())
+  status         Status     @default(offline)
+  title          String?
+  location       String?
+  bannerPic      String?
+
+  posts          Post[]
+  sentMessages   Message[]  @relation("SentMessages")
+  rooms          Room[]     @relation("RoomUsers")
+
+  sentConnections     Connection[] @relation("RequesterConnections")
+  receivedConnections Connection[] @relation("ReceiverConnections")
+
+  likes         Like[]
+  comments      Comment[]
+  notifications Notification[]
+}
+
+
+model Post {
+  id        String   @id @default(cuid())
+  text      String
+  imageUrl  String
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  likes     Like[]
+  comments   Comment[]
+}
+
+model Like {
+  id      String @id @default(cuid())
+  postId  String
+  userId  String
+  createdAt DateTime @default(now())
+
+  post    Post   @relation(fields: [postId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId], name: "postId_userId")
+}
+
+model Room {
+  id         String     @id @default(cuid())
+  name       String?
+  isGroup    Boolean    @default(false)
+  users      User[]     @relation("RoomUsers")
+  messages   Message[]
+  createdAt  DateTime   @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  text       String
+  senderId   String
+  roomId     String
+  createdAt  DateTime @default(now())
+
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  room       Room     @relation(fields: [roomId], references: [id])
+}
+
+model Connection {
+  id            String   @id @default(cuid())
+  requesterId   String
+  receiverId    String
+  status        String   @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  createdAt     DateTime @default(now())
+
+  requester     User     @relation("RequesterConnections", fields: [requesterId], references: [id])
+  receiver      User     @relation("ReceiverConnections", fields: [receiverId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Comment {
+  id            String   @id @default(cuid())
+  commenterId   String
+  text          String
+  postId        String
+
+  post    Post   @relation(fields: [postId], references: [id])
+  user   User   @relation(fields: [commenterId], references: [id])
+
+  createdAt DateTime @default(now())
+}
