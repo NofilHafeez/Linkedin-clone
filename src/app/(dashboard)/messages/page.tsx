@@ -26,7 +26,7 @@ export default function MessagingPage() {
           
           {/* Chat Window */}
           <div className="lg:col-span-8">
-            <ChatWindow  roomId={selectedRoomId} otherUser={otherUser} />
+            <ChatWindow  roomId={selectedRoomId ?? ''} otherUser={otherUser} />
           </div>
         </div>
       </div>

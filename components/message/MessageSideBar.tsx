@@ -39,11 +39,12 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
 
   const fetchConnections = async () => {
     try {
-      const res = await axios.get(`/api/connections/recent?userId=${user.id}`);
+      const res = await axios.get(`/api/connections/recent?userId=${user?.id}`);
        if (res.status === 200 && Array.isArray(res.data)) {
         const users = res.data.map((conn: any) => {
           if (!conn.requester || !conn.receiver) return null;
 
+          if (!user) return null;
           return conn.requesterId === user.id ? conn.receiver : conn.requester;
         }).filter(Boolean); // Removes nulls
 
@@ -56,7 +57,7 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
 
   const fetchRooms = async () => {
     try {
-      const res = await axios.get(`/api/room?userId=${user.id}`);
+      const res = await axios.get(`/api/room?userId=${user?.id}`);
       setRooms(res.data);
     } catch (err) {
       console.error('Error fetching rooms:', err);
@@ -66,7 +67,7 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
   const handleSearchSelect = async (selectedUserId: string) => {
   try {
     const res = await axios.post('/api/room', {
-      userIds: [user.id, selectedUserId],
+      userIds: [user?.id, selectedUserId],
     });
     
     const createdRoom = res.data.room;
@@ -137,7 +138,7 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
           <p className="text-gray-400 text-center mt-4">No conversations yet</p>
         ) : (
           rooms.map((room) => {
-            const otherUser = room.users.find((p) => p.id !== user.id);
+            const otherUser = room.users.find((p) => p.id !== user?.id);
             if (!otherUser) return null;
             return (
               <div

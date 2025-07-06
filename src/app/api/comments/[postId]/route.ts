@@ -31,29 +31,39 @@ export async function GET(request: NextRequest, { params }: { params: { postId: 
 }
 
 export async function POST(request: NextRequest, { params }: { params: { postId: string } }) {
-    const {postId} = params;
-    const { text, commenterId } = await request.json();
-
-    if (!postId) {
-        return new Response(JSON.stringify({ error: 'Post ID is required' }), { status: 400 });
-    }
+    const { postId } = params;
 
     try {
-          const comment = await prisma.comment.create({
-            data: { 
+        const { text, commenterId } = await request.json();
+
+        if (!postId || !text || !commenterId) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        const comment = await prisma.comment.create({
+            data: {
                 postId,
                 text,
-                commenterId
-             }
+                commenterId,
+            },
+            include: {
+                commenter: { // Optional: Include commenter info if you want to return it
+                    select: {
+                        id: true,
+                        name: true,
+                        profilePic: true,
+                    },
+                },
+            },
         });
 
-         return NextResponse.json("comment is sended!", { status: 200 });
-    } catch(error) {
-        console.error("Error fetching connections:", error);
+        return NextResponse.json({ message: 'Comment created successfully', comment }, { status: 200 });
+    } catch (error) {
+        console.error("Error creating comment:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
-    
 }
+
 
 export async function DELETE(request: NextRequest, { params }: { params: { postId: string } }) {
     const { postId } = params;

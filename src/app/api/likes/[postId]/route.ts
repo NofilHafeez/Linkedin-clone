@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '../../../../../lib/schema';
 
 export async function GET(request: Request, { params }: { params: { postId: string } }) {
@@ -25,33 +25,40 @@ export async function GET(request: Request, { params }: { params: { postId: stri
   }
 }
 
-export async function POST(request: Request, { params }: { params: { postId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: { postId: string } }) {
   const { postId } = params;
   const { userId } = await request.json();
 
   if (!postId || !userId) {
-    return NextResponse.json({ error: 'Post ID and User ID are required' }, { status: 400 });
+    return NextResponse.json({ error: "Missing postId or userId" }, { status: 400 });
   }
 
   try {
     const existingLike = await prisma.like.findFirst({
-      where: { postId, userId },
+      where: {
+        postId,
+        userId,
+      },
     });
 
     if (existingLike) {
-      return NextResponse.json({ error: 'Already liked' }, { status: 409 });
+      await prisma.like.delete({
+        where: { id: existingLike.id },
+      });
+      return NextResponse.json({ message: "Post unliked", liked: false });
+    } else {
+      await prisma.like.create({
+        data: { postId, userId },
+      });
+      return NextResponse.json({ message: "Post liked", liked: true });
     }
 
-    const like = await prisma.like.create({
-      data: { postId, userId },
-    });
-
-    return NextResponse.json(like, { status: 201 });
   } catch (error) {
-    console.error('Error creating like:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Error toggling like:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
 
 export async function DELETE(request: Request, { params }: { params: { postId: string } }) {
   const { postId } = params;

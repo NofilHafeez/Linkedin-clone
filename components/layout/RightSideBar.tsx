@@ -2,6 +2,17 @@
 
 import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
+import { useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+
+interface Person {
+  id: string;
+  name: string;
+  title: string;
+  profilePic: string;
+}
+
 
 export default function RightSidebar() {
   const [dismissedNews, setDismissedNews] = useState<number[]>([]);
@@ -38,6 +49,57 @@ export default function RightSidebar() {
       mutualConnections: 15
     }
   ];
+
+  const [people, setPeople] = useState<Person[]>([]);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchPeople = async () => {
+      try {
+        const response = await axios.get(`/api/connections/?userId=${user.id}`, {
+          withCredentials: true,
+        });
+
+        if (response.data) {
+          console.log('Fetched people you may know:', response.data);
+          setPeople(response.data.similarUsers || []);
+        } else {
+          console.error('No data received from API');
+        }
+      } catch (error) {
+        console.error('Error fetching people you may know:', error);
+      }
+    };
+
+    fetchPeople();
+  }, [user?.id]);
+
+  const sendConnectionRequest = async (receiverId: string) => {
+    if (!user?.id) {
+      console.error('User ID is missing.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        '/api/connections/request',
+        {
+          requesterId: user.id,
+          receiverId: receiverId,
+        },
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        setPeople((prev) => prev.filter((person) => person.id !== receiverId));
+        console.log('Connection request sent successfully');
+      }
+    } catch (error) {
+      console.error('Error sending connection request:', error);
+    }
+  };
 
   const dismissNews = (id: number) => {
     setDismissedNews([...dismissedNews, id]);
@@ -82,51 +144,52 @@ export default function RightSidebar() {
       </div>
       
       {/* People You May Know */}
-      <div className="bg-zinc-900 rounded-lg  overflow-hidden">
-        <div className="p-4 border-b">
-          <h3 className="font-semibold text-white">People you may know</h3>
-        </div>
-        
-        <div className="p-4 space-y-4">
-          {visibleConnections.map((person) => (
-            <div key={person.id} className="group">
-              <div className="flex items-start justify-between">
-                <div className="flex space-x-3 flex-1">
-                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                    <img
-                      src={person.avatar}
-                      alt={person.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-white hover:text-blue-600 cursor-pointer transition-colors">
-                      {person.name}
-                    </h4>
-                    <p className="text-xs text-gray-300 mt-1">{person.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {person.mutualConnections} mutual connections
-                    </p>
-                  </div>
+      <div className="bg-zinc-900 rounded-lg shadow-sm  border-zinc-700 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-white">People you may know</h2>
+      </div>
+
+      {people.length === 0 ? (
+        <p className="text-gray-400 text-center">No people to suggest right now</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {people.map((person) => (
+            <div
+              key={person.id}
+              className="bg-zinc-700 rounded-lg p-4 hover:bg-zinc-600 transition-colors"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="w-16 h-16 rounded-full overflow-hidden">
+                  <img
+                    src={person.profilePic || '/default-profile.png'}
+                    alt={person.name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <button
-                  onClick={() => dismissConnection(person.id)}
-                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 transition-all"
-                >
+                <button className="text-gray-400 hover:text-gray-300">
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              
-              <div className="mt-3 flex space-x-2">
-                <button className="flex items-center space-x-1 px-3 py-1.5 border border-blue-600 text-blue-600 rounded-full text-xs hover:bg-blue-50 transition-colors">
-                  <Plus className="w-3 h-3" />
-                  <span>Connect</span>
-                </button>
+
+              <div className="mb-4">
+                <h3 className="font-semibold text-white hover:text-blue-400 cursor-pointer text-sm">
+                  {person.name}
+                </h3>
+                <p className="text-gray-400 text-xs mt-1">{person.title}</p>
               </div>
+
+              <button
+                onClick={() => sendConnectionRequest(person.id)}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-blue-600 text-blue-400 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Connect</span>
+              </button>
             </div>
           ))}
         </div>
-      </div>
+      )}
+    </div>
       
       {/* Footer Links */}
       <div className="bg-zinc-900 rounded-lg  p-4">

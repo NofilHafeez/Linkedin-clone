@@ -61,7 +61,7 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
       const res = await axios.get(`/api/messages?roomId=${roomId}`);
       const formatted = res.data.map((m: Message) => ({
         ...m,
-        isOwn: m.senderId === user.id,
+        isOwn: m.senderId === user?.id,
       }));
       setChat(formatted);
     } catch (err) {

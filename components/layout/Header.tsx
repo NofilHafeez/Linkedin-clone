@@ -18,7 +18,6 @@ export default function Header() {
     { id: 'messages', icon: MessageSquare, label: 'Messaging' },
     { id: 'notifications', icon: Bell, label: 'Notifications' },
     { id: user ? `profile/${user.id}` : 'profile', icon: User, label: 'Me' },
-    { id: 'work', icon: Grid3X3, label: 'Work' },
   ];
 
     const handleLogout = async () => {
