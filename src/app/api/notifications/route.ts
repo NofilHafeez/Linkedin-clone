@@ -43,7 +43,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-
+ 
 // Create notification
 export async function POST(request: NextRequest) {
   const { userId, message } = await request.json();

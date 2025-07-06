@@ -25,7 +25,10 @@ model User {
   name           String
   email          String     @unique
   password       String? 
-  bio            String?
+  bio            String? 
+  experience     Json?       // Structured experience (array of objects)
+  education      Json?       // Structured education (array of objects)
+  skills         Json?  
   profilePic     String? 
   createdAt      DateTime   @default(now())
   status         Status     @default(offline)

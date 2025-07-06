@@ -54,6 +54,23 @@ export default function Post({ post }: { post: Post }) {
   const [loadingLike, setLoadingLike] = useState(false);
   const [showLikesList, setShowLikesList] = useState(false);
 
+  const handleNotification = async (message: string, userId: string) => {
+    try {
+      const res = await axios.post('api/notifications', {message, userId}, {withCredentials: true});
+    
+      if (res.status === 201) {
+        console.log('Notification sent successfully');
+      }else {
+        console.error('Failed to send notification:', res.data);
+      }
+    }catch (error) {
+        console.error('Error sending notification:', error);
+      }
+
+    }
+
+
+
   useEffect(() => {
     if (user?.id && post.likes) {
       const liked = post.likes.some((like) => like.userId === user.id);
@@ -61,51 +78,111 @@ export default function Post({ post }: { post: Post }) {
     }
   }, [post.likes, user?.id]);
 
-  const handleLike = async (postId: string) => {
-    if (!user?.id || loadingLike) return;
 
-    setLoadingLike(true);
+
+const handleLike = async (postId: string) => {
+  if (!user?.id || loadingLike) return;
+
+  setLoadingLike(true);
+
+  if (isLiked) {
+    // Optimistically update for dislike
+    setIsLiked(false);
+    setLikesCount((prev) => prev - 1);
+
+    try {
+      const res = await axios.delete(
+        `/api/likes/${postId}`,
+        { data: { userId: user.id }, withCredentials: true }
+      );
+      if (res.status !== 200) {
+        // Revert if failed
+        setIsLiked(true);
+        setLikesCount((prev) => prev + 1);
+      }
+    } catch (error) {
+      setIsLiked(true);
+      setLikesCount((prev) => prev + 1);
+      console.error('Error disliking post:', error);
+    } finally {
+      setLoadingLike(false);
+    }
+  } else {
+    // Optimistically update for like
+    setIsLiked(true);
+    setLikesCount((prev) => prev + 1);
+
     try {
       const res = await axios.post(
         `/api/likes/${postId}`,
         { userId: user.id },
         { withCredentials: true }
       );
-
-      if (res.status === 200) {
-        const liked = res.data.liked;
-        setIsLiked(liked);
-        setLikesCount((prev) => (liked ? prev + 1 : prev - 1));
+      if (res.status !== 200) {
+        // Revert if failed
+        setIsLiked(false);
+        setLikesCount((prev) => prev - 1);
+      } else {
+        handleNotification('Liked your post', post.userId);
       }
     } catch (error) {
+      setIsLiked(false);
+      setLikesCount((prev) => prev - 1);
       console.error('Error liking post:', error);
     } finally {
       setLoadingLike(false);
     }
-  };
+  }
+};
+
 
   const handleComment = async (postId: string) => {
-    if (!comment.trim() || !user?.id) return;
+  if (!comment.trim() || !user?.id) return;
 
-    try {
-      const res = await axios.post(
-        `/api/comments/${postId}`,
-        {
-          text: comment,
-          commenterId: user.id,
-        },
-        { withCredentials: true }
-      );
-
-      if (res.status === 200) {
-        const newComment = res.data;
-        setCommentsList((prev) => [...prev, newComment]);
-        setComment('');
-      }
-    } catch (error) {
-      console.error('Error posting comment:', error);
-    }
+  // Create a temporary comment for instant UI update
+  const tempComment: Comment = {
+    id: `temp-${Date.now()}`, // Temporary unique ID
+    text: comment,
+    commenterId: user.id,
+    postId: postId,
+    createdAt: new Date().toISOString(),
+    commenter: {
+      id: user.id,
+      name: user.name,
+      profilePic: user.profilePic || null,
+    },
+    likes: [],
   };
+
+  // Instantly update UI
+  setCommentsList((prev) => [...prev, tempComment]);
+  setComment('');
+
+  try {
+    const res = await axios.post(
+      `/api/comments/${postId}`,
+      {
+        text: comment,
+        commenterId: user.id,
+      },
+      { withCredentials: true }
+    );
+
+    if (res.status === 200) {
+      const newComment = res.data.comment;
+
+      // Replace the temporary comment with the real one
+      setCommentsList((prev) =>
+        prev.map((c) => (c.id === tempComment.id ? newComment : c))
+      );
+    }
+  } catch (error) {
+    console.error('Error posting comment:', error);
+    // Optional: Remove the temporary comment or show error message
+    setCommentsList((prev) => prev.filter((c) => c.id !== tempComment.id));
+  }
+};
+
 
   return (
     <div className="bg-zinc-900 rounded-lg relative">
@@ -218,7 +295,7 @@ export default function Post({ post }: { post: Post }) {
               <div key={cmt.id} className="flex space-x-3 items-start">
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <img
-                    src={cmt.commenter.profilePic || 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'}
+                    src={cmt.commenter?.profilePic || 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'}
                     alt="User"
                     className="w-full h-full object-cover"
                   />
@@ -248,7 +325,7 @@ export default function Post({ post }: { post: Post }) {
                 onKeyDown={(e) => e.key === 'Enter' && handleComment(post.id)}
               />
               <button
-                onClick={() => handleComment(post.id)}
+                onClick={() => {handleComment(post.id); handleNotification(`New comment on your post: "${comment}"`, post.userId)}}
                 disabled={!comment.trim()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
