@@ -12,8 +12,17 @@ export async function GET(request: Request) {
 
   try {
     const notifications = await prisma.notification.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' }
+      where: { receiverId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            profilePic: true
+          }
+        }
+      },
     });
 
     return NextResponse.json(notifications, { status: 200 });
@@ -25,15 +34,15 @@ export async function GET(request: Request) {
 
 // Mark notification as read
 export async function PUT(request: Request) {
-  const { notificationId } = await request.json();
-
-  if (!notificationId) {
-    return NextResponse.json({ error: 'Notification ID is required' }, { status: 400 });
+  const { userId } = await request.json();
+ 
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
   }
 
   try {
-    await prisma.notification.update({
-      where: { id: notificationId },
+    await prisma.notification.updateMany({
+      where: { receiverId: userId },
       data: { isRead: true }
     });
 
@@ -46,15 +55,15 @@ export async function PUT(request: Request) {
  
 // Create notification
 export async function POST(request: NextRequest) {
-  const { userId, message } = await request.json();
+  const { senderId, receiverId, message } = await request.json();
 
-  if (!userId || !message) {
-    return NextResponse.json({ error: "User ID and text are required" }, { status: 400 });
+  if (!senderId || !message || !receiverId) {
+    return NextResponse.json({ error: "sender and receiver ID and text are required" }, { status: 400 });
   }
 
   try {
     const notification = await prisma.notification.create({
-      data: { userId, message },
+      data: { senderId, receiverId, message },
     });
 
     return NextResponse.json(notification, { status: 201 });

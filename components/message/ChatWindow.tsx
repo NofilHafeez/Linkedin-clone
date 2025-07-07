@@ -2,11 +2,10 @@
 
 import { Send, Paperclip, Smile, MoreHorizontal, Phone, Video, Info } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 
-let socket: Socket;
 
 interface Message {
   id?: string;
@@ -27,17 +26,18 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState<Message[]>([]);
   const { user } = useAuth();
+  const socket = useSocket();
 
   useEffect(() => {
     if (!user?.id || !roomId) return;
 
     fetchMessages();
 
-    socket = io('http://localhost:4000');
+    if (!socket) return;
 
-    socket.on('connect', () => {
-      console.log('✅ Connected to WS server:', socket.id);
-    });
+    // socket.on('connect', () => {
+    //   console.log('✅ Connected to WS server:', socket.id);
+    // });
 
     socket.emit('join-room', roomId);
 
@@ -71,6 +71,7 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
 
   const handleSendMessage = async () => {
     if (!message.trim() || !user?.id) return;
+    if (!socket) return;
 
     try {
       const res = await axios.post('/api/messages', {

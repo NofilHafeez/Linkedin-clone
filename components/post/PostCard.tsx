@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Share, Send, MoreHorizontal } from 'lucide-react'
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import { useSocket } from '../../context/SocketContext';
 
 export interface UserBasic {
   id: string;
@@ -45,6 +46,7 @@ export interface UserWithTitle extends UserBasic {
 }
 
 export default function Post({ post }: { post: Post }) {
+  const socket = useSocket();
   const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes?.length || 0);
@@ -54,12 +56,13 @@ export default function Post({ post }: { post: Post }) {
   const [loadingLike, setLoadingLike] = useState(false);
   const [showLikesList, setShowLikesList] = useState(false);
 
-  const handleNotification = async (message: string, userId: string) => {
+  const handleNotification = async (message: string, receiverId: string) => {
     try {
-      const res = await axios.post('api/notifications', {message, userId}, {withCredentials: true});
+      const res = await axios.post('api/notifications', {message, senderId: user?.id, receiverId}, {withCredentials: true});
     
       if (res.status === 201) {
         console.log('Notification sent successfully');
+        
       }else {
         console.error('Failed to send notification:', res.data);
       }
@@ -76,7 +79,9 @@ export default function Post({ post }: { post: Post }) {
       const liked = post.likes.some((like) => like.userId === user.id);
       setIsLiked(liked);
     }
+    
   }, [post.likes, user?.id]);
+  
 
 
 
@@ -86,17 +91,17 @@ const handleLike = async (postId: string) => {
   setLoadingLike(true);
 
   if (isLiked) {
-    // Optimistically update for dislike
+    // Optimistic Dislike
     setIsLiked(false);
     setLikesCount((prev) => prev - 1);
 
     try {
-      const res = await axios.delete(
-        `/api/likes/${postId}`,
-        { data: { userId: user.id }, withCredentials: true }
-      );
+      const res = await axios.delete(`/api/likes/${postId}`, {
+        data: { userId: user.id },
+        withCredentials: true,
+      });
       if (res.status !== 200) {
-        // Revert if failed
+        // Revert UI if request failed
         setIsLiked(true);
         setLikesCount((prev) => prev + 1);
       }
@@ -108,7 +113,7 @@ const handleLike = async (postId: string) => {
       setLoadingLike(false);
     }
   } else {
-    // Optimistically update for like
+    // Optimistic Like
     setIsLiked(true);
     setLikesCount((prev) => prev + 1);
 
@@ -119,11 +124,24 @@ const handleLike = async (postId: string) => {
         { withCredentials: true }
       );
       if (res.status !== 200) {
-        // Revert if failed
+        // Revert UI if request failed
         setIsLiked(false);
         setLikesCount((prev) => prev - 1);
       } else {
-        handleNotification('Liked your post', post.userId);
+        if(post.userId !== user.id)  {// Avoid self-notification
+        handleNotification('Liked your post', post.userId); }
+        if (!socket) return;
+         socket.emit('send-like-noti', {
+              message: 'Liked your post',
+              receiverId: post.userId,
+              sender: {
+                id: user.id,
+                name: user.name,
+                profilePic: user.profilePic
+              }
+          });
+
+
       }
     } catch (error) {
       setIsLiked(false);
@@ -134,6 +152,7 @@ const handleLike = async (postId: string) => {
     }
   }
 };
+
 
 
   const handleComment = async (postId: string) => {
@@ -176,6 +195,13 @@ const handleLike = async (postId: string) => {
         prev.map((c) => (c.id === tempComment.id ? newComment : c))
       );
     }
+
+    if(post.userId !== user.id)  {// Avoid self-notification
+        handleNotification('Liked your post', post.userId); }
+  else {
+      console.log('Comment posted successfully');
+    }
+
   } catch (error) {
     console.error('Error posting comment:', error);
     // Optional: Remove the temporary comment or show error message

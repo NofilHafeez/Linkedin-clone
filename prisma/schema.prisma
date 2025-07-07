@@ -43,9 +43,13 @@ model User {
   sentConnections     Connection[] @relation("RequesterConnections")
   receivedConnections Connection[] @relation("ReceiverConnections")
 
+  
+  sentNotifications     Notification[] @relation("SentNotifications")
+  receivedNotifications Notification[] @relation("ReceivedNotifications")
+
   likes         Like[]
   comments      Comment[]
-  notifications Notification[]
+
 }
 
 
@@ -106,14 +110,17 @@ model Connection {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  message   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  message    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id])
+  sender     User     @relation("SentNotifications", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedNotifications", fields: [receiverId], references: [id])
 }
+
 
 model Comment {
   id            String   @id @default(cuid())

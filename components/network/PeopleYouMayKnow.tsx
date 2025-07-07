@@ -10,11 +10,28 @@ interface Person {
   name: string;
   title: string;
   profilePic: string;
-}
+} 
+
 
 export default function PeopleYouMayKnow() {
   const [people, setPeople] = useState<Person[]>([]);
   const { user } = useAuth();
+
+ const handleNotification = async (message: string, receiverId: string) => {
+    try {
+      const res = await axios.post('api/notifications', {message, senderId: user?.id, receiverId}, {withCredentials: true});
+    
+      if (res.status === 201) {
+        console.log('Notification sent successfully');
+      }else {
+        console.error('Failed to send notification:', res.data);
+      }
+    }catch (error) {
+        console.error('Error sending notification:', error);
+      }
+
+    }
+  
 
   useEffect(() => {
     if (!user?.id) return;
@@ -56,7 +73,7 @@ export default function PeopleYouMayKnow() {
       );
 
       if (response.status === 200) {
-        setPeople((prev) => prev.filter((person) => person.id !== receiverId));
+        // setPeople((prev) => prev.filter((person) => person.id !== receiverId));
         console.log('Connection request sent successfully');
       }
     } catch (error) {
@@ -101,7 +118,7 @@ export default function PeopleYouMayKnow() {
               </div>
 
               <button
-                onClick={() => sendConnectionRequest(person.id)}
+                onClick={() => {sendConnectionRequest(person.id); handleNotification(`You have a new connection request from ${user?.name}`, person.id)}}
                 className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-blue-600 text-blue-400 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-sm"
               >
                 <UserPlus className="w-4 h-4" />

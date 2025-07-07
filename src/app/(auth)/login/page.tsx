@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { useAuth } from '../../../../context/AuthContext';
 
 export default function LoginPage() {
    const router = useRouter(); 
+   const {fetchUser} = useAuth();
 
   interface User {
     email: string;
@@ -32,7 +34,9 @@ const handleLogin = async () => {
         type: "success",
       });
 
-      setUser({ email: "", password: "" });  // Clear form AFTER successful login
+      setUser({ email: "", password: "" }); 
+      fetchUser();
+       // Clear form AFTER successful login
 
       setTimeout(() => {
         setMessage({ text: null, type: null });
