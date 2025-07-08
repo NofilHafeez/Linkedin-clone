@@ -3,6 +3,7 @@ import { Source_Sans_3,  Source_Code_Pro  } from "next/font/google";
 import { AuthProvider } from "../../context/AuthContext";
 import "./globals.css";
 import { SocketProvider } from "../../context/SocketContext";
+import { NotificationProvider } from "../../context/NotificationContext";
 
 const sourceSans = Source_Sans_3({
   variable: "--font-source-sans",
@@ -29,11 +30,13 @@ export default function RootLayout({
       <body
         className={`${sourceSans.variable} ${sourceMono.variable}antialiased`}
       >
-        <SocketProvider>
-          <AuthProvider>
-              {children}
-          </AuthProvider>
-       </SocketProvider> 
+        <NotificationProvider>
+          <SocketProvider>
+              <AuthProvider>
+                  {children}
+              </AuthProvider>
+          </SocketProvider> 
+       </NotificationProvider>
       </body>
     </html>
   );

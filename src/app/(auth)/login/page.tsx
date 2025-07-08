@@ -1,23 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import { useAuth } from '../../../../context/AuthContext';
+import { useSocket } from '../../../../context/SocketContext';
 
 export default function LoginPage() {
    const router = useRouter(); 
-   const {fetchUser} = useAuth();
+   const {fetchUser, user} = useAuth();
+   const socket = useSocket();
 
   interface User {
     email: string;
     password: string;
   }
 
+  useEffect(() => {
+  if (!socket || !user?.id) return;
+
+  socket.emit('login-user', user.id);
+}, [socket, user?.id]);
+
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string | null, type: 'success' | 'error' | null }>({ text: null, type: null });
-  const [user, setUser] = useState<User>({
+  const [loginUser, setLoginUser] = useState<User>({
     email: "",
     password: "",
   });
@@ -25,7 +34,7 @@ const handleLogin = async () => {
   try {
     setLoading(true);
 
-    const res = await axios.post("/api/auth/login", user, { withCredentials: true });
+    const res = await axios.post("/api/auth/login", loginUser, { withCredentials: true });
     const data = res.data;
 
     if (res.status === 200) {
@@ -34,7 +43,7 @@ const handleLogin = async () => {
         type: "success",
       });
 
-      setUser({ email: "", password: "" }); 
+      setLoginUser({ email: "", password: "" }); 
       fetchUser();
        // Clear form AFTER successful login
 
@@ -83,8 +92,8 @@ const handleLogin = async () => {
             type="email"
             className="w-full px-4 py-2 rounded-lg bg-zinc-800 outline-none"
             placeholder="you@example.com"
-             value={user.email}
-            onChange={(e) => setUser({ ...user, email: e.target.value })}
+             value={loginUser.email}
+            onChange={(e) => setLoginUser({ ...loginUser, email: e.target.value })}
             required
           />
         </div>
@@ -95,8 +104,8 @@ const handleLogin = async () => {
             type="password"
             className="w-full px-4 py-2 rounded-lg bg-zinc-800 outline-none"
             placeholder="••••••••"
-             value={user.password}
-            onChange={(e) => setUser({ ...user, password: e.target.value })}
+             value={loginUser.password}
+            onChange={(e) => setLoginUser({ ...loginUser, password: e.target.value })}
             required
           />
         </div>

@@ -4,6 +4,7 @@ import { UserPlus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 
 interface Person {
   id: string;
@@ -16,6 +17,7 @@ interface Person {
 export default function PeopleYouMayKnow() {
   const [people, setPeople] = useState<Person[]>([]);
   const { user } = useAuth();
+  const socket = useSocket();
 
  const handleNotification = async (message: string, receiverId: string) => {
     try {
@@ -73,7 +75,20 @@ export default function PeopleYouMayKnow() {
       );
 
       if (response.status === 200) {
-        // setPeople((prev) => prev.filter((person) => person.id !== receiverId));
+        if(receiverId !== user.id)  {// Avoid self-notification
+        handleNotification("New connection request from", receiverId); 
+         if (socket) {
+        socket.emit('send-connect-noti', {
+            message: `You have a new connection request from ${user?.name}`,
+            receiverId: receiverId,
+            sender: {
+              id: user.id,
+              name: user.name,
+              profilePic: user.profilePic,
+            },
+          });
+      }
+  }
         console.log('Connection request sent successfully');
       }
     } catch (error) {

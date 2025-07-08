@@ -21,9 +21,31 @@ io.on('connection', (socket) => {
     console.log(`Socket ${socket.id} joined room ${roomId}`);
   });
 
-  socket.on('send-comment-noti', (name, message) => {
-    console.log('Comment:', name, message);
-  })
+  socket.on('join-room', (userId) => {
+    console.log(`🛏️ Joined room: ${userId}`);
+    socket.join(userId);
+  });
+
+  socket.on('send-like-noti', ({ message, receiverId, sender }) => {
+    console.log(`📨 Sending to ${receiverId}: ${message}`);
+    io.to(receiverId).emit('like-noti-receive', { message, sender });
+  });
+
+   socket.on('send-comment-noti', ({ message, receiverId, sender }) => {
+    console.log(`📨 Sending to ${receiverId}: ${message}`);
+    io.to(receiverId).emit('comment-noti-receive', { message, sender });
+  });
+
+  socket.on('send-connect-noti', ({ message, receiverId, sender }) => {
+    console.log(`📨 Sending to ${receiverId}: ${message}`);
+    io.to(receiverId).emit('connect-noti-receive', { message, sender });
+  });
+
+
+
+
+
+
 
   // socket.on('send-like-noti', ({ name, message, receiverId }) => {
   //   console.log('Comment:', name, message, receiverId);
@@ -35,20 +57,13 @@ io.on('connection', (socket) => {
 
   // });
 
-    // User joins room named after their userId
-  socket.on('join-room', (userId) => {
-    socket.join(userId);
-    console.log(`Socket ${socket.id} joined room ${userId}`);
-  });
+    // User joins room named after their userI
 
-  // Sending like notification
-  socket.on('send-like-noti', ({ name, message, receiverId, sender }) => {
-    io.to(receiverId).emit('like-noti-receive', { name, message, receiverId, sender });
-  });
 
+ 
   socket.on('send-message', (data) => {
     const { roomId } = data;
-    console.log('Message:', data);
+    console.log('Message:', data);  
 
     // Send to everyone in the room EXCEPT sender
     socket.to(roomId).emit('receive-message', data);

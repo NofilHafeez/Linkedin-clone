@@ -88,70 +88,57 @@ export default function Post({ post }: { post: Post }) {
 const handleLike = async (postId: string) => {
   if (!user?.id || loadingLike) return;
 
+  const newLikeState = !isLiked;
+  const likeDelta = newLikeState ? 1 : -1;
+
+  // Optimistic UI update
+  setIsLiked(newLikeState);
+  setLikesCount((prev) => prev + likeDelta);
   setLoadingLike(true);
 
-  if (isLiked) {
-    // Optimistic Dislike
-    setIsLiked(false);
-    setLikesCount((prev) => prev - 1);
+  try {
+    const res = await axios.post(
+      `/api/likes/${postId}`,
+      { userId: user.id },
+      { withCredentials: true }
+    );
 
-    try {
-      const res = await axios.delete(`/api/likes/${postId}`, {
-        data: { userId: user.id },
-        withCredentials: true,
-      });
-      if (res.status !== 200) {
-        // Revert UI if request failed
-        setIsLiked(true);
-        setLikesCount((prev) => prev + 1);
-      }
-    } catch (error) {
-      setIsLiked(true);
-      setLikesCount((prev) => prev + 1);
-      console.error('Error disliking post:', error);
-    } finally {
-      setLoadingLike(false);
+    const { liked } = res.data;
+
+    // If backend response disagrees, revert
+    if (liked !== newLikeState) {
+      setIsLiked(liked);
+      setLikesCount((prev) => prev + (liked ? 1 : -1) - likeDelta);
     }
-  } else {
-    // Optimistic Like
-    setIsLiked(true);
-    setLikesCount((prev) => prev + 1);
 
-    try {
-      const res = await axios.post(
-        `/api/likes/${postId}`,
-        { userId: user.id },
-        { withCredentials: true }
-      );
-      if (res.status !== 200) {
-        // Revert UI if request failed
-        setIsLiked(false);
-        setLikesCount((prev) => prev - 1);
-      } else {
-        if(post.userId !== user.id)  {// Avoid self-notification
-        handleNotification('Liked your post', post.userId); }
-        if (!socket) return;
-         socket.emit('send-like-noti', {
-              message: 'Liked your post',
-              receiverId: post.userId,
-              sender: {
-                id: user.id,
-                name: user.name,
-                profilePic: user.profilePic
-              }
-          });
+    // Only emit notification if it's a new like (not unlike)
+    if (liked && post.userId !== user.id) {
+      handleNotification('Liked your post', post.userId);
 
+      if (socket) {
+        socket.emit('send-like-noti', {
+  message: 'Liked your post',
+  receiverId: post.userId,
+  sender: {
+    id: user.id,
+    name: user.name,
+    profilePic: user.profilePic,
+  },
+});
 
       }
-    } catch (error) {
-      setIsLiked(false);
-      setLikesCount((prev) => prev - 1);
-      console.error('Error liking post:', error);
-    } finally {
-      setLoadingLike(false);
     }
+  } catch (error) {
+    console.error('❌ Error toggling like:', error);
+    // Revert optimistic update if error
+    setIsLiked(!newLikeState);
+    setLikesCount((prev) => prev - likeDelta);
+  } finally {
+    setLoadingLike(false);
   }
 };
+
+
 
 
 
@@ -197,7 +184,19 @@ const handleLike = async (postId: string) => {
     }
 
     if(post.userId !== user.id)  {// Avoid self-notification
-        handleNotification('Liked your post', post.userId); }
+        handleNotification(`New comment on your post: "${comment}"`, post.userId); 
+         if (socket) {
+        socket.emit('send-comment-noti', {
+            message: `New comment on your post: "${comment}"`,
+            receiverId: post.userId,
+            sender: {
+              id: user.id,
+              name: user.name,
+              profilePic: user.profilePic,
+            },
+          });
+      }
+  }
   else {
       console.log('Comment posted successfully');
     }

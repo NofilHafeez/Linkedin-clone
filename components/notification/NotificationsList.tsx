@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { useNotification } from '../../context/NotificationContext';
+
+
 
 export interface UserBasic {
   id: string;
@@ -25,6 +28,7 @@ export default function NotificationsList() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { user } = useAuth();
   const socket = useSocket();
+  const {setCount} = useNotification();
   
 
   useEffect(() => {
@@ -34,7 +38,10 @@ export default function NotificationsList() {
       try {
         const res = await axios.get(`/api/notifications?userId=${user.id}`, { withCredentials: true });
         if (res.status === 200) {
-          setNotifications(res.data);
+           const all = res.data;
+           const unread = all.filter((n: Notification) => !n.isRead);
+           setNotifications(all);
+           setCount(unread.length); 
         }
       } catch (error) {
         console.error('Error fetching notifications:', error);
@@ -50,34 +57,79 @@ export default function NotificationsList() {
     };
   }, [user?.id]);
 
+// useEffect(() => {
+//   if (!socket || !user?.id) return;
+
+//   // Join private room based on user ID
+//   socket.emit('join-room', user.id);
+// }, [socket, user?.id]);
+
 useEffect(() => {
   if (!socket || !user?.id) return;
 
-  // Join private room based on user ID
+  // Join user-specific room
   socket.emit('join-room', user.id);
-}, [socket, user?.id]);
+   console.log('Emitted join-room for user', user.id);
 
-// Listening for notifications
-useEffect(() => {
-  if (!socket) return;
 
-  socket.on('like-noti-receive', ({ name, message, receiverId, sender }) => {
-    if (receiverId !== user.id) return;
-
-    const newNotification: Notification = {
+   socket.on('comment-noti-receive', ({ message, sender }) => {
+    console.log('🔥 Received noti:', message, sender);
+    const newNotification = {
       id: Date.now(),
-      userId: receiverId,
       message,
-      isRead: false,
       sender,
+      isRead: false,
       createdAt: new Date().toISOString(),
+      userId: user.id,
     };
-
+    
     setNotifications((prev) => [newNotification, ...prev]);
+    setCount((prev) => prev + 1);
+
   });
+
+  // Listen for incoming like notifications
+  socket.on('like-noti-receive', ({ message, sender }) => {
+    console.log('🔥 Received noti:', message, sender);
+    const newNotification = {
+      id: Date.now(),
+      message,
+      sender,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+      userId: user.id,
+    };
+    
+    setNotifications((prev) => [newNotification, ...prev]);
+    setCount((prev) => prev + 1);
+
+  });
+
+  socket.on('connect-noti-receive', ({ message, sender }) => {
+    console.log('🔥 Received noti:', message, sender);
+    const newNotification = {
+      id: Date.now(),
+      message,
+      sender,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+      userId: user.id,
+    };
+    
+    setNotifications((prev) => [newNotification, ...prev]);
+    setCount((prev) => prev + 1);
+
+  });
+
+
+
 
   return () => {
     socket.off('like-noti-receive');
+    socket.off('comment-noti-receive');
+    socket.off('connect-noti-receive');
+
+
   };
 }, [socket, user?.id]);
 
