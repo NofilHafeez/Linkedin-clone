@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit, Plus, ChevronRight } from 'lucide-react';
+import { Edit, Plus, ChevronRight, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import axios from 'axios';
@@ -83,105 +83,122 @@ export default function SkillsSection({ skills = [] }: { skills?: Skill[] }) {
   const otherSkills = skillsList.slice(3);
 
   return (
-    <div className="bg-zinc-900 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-white">Skills</h2>
-        <button
-          onClick={() => setIsAdding(true)}
-          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
-      </div>
+    <>
+      <div className="bg-zinc-900 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-white">Skills</h2>
+          <button
+            onClick={() => setIsAdding(true)}
+            className="p-2 text-gray-400 hover:text-white transition"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
 
-      {/* Top Skills */}
-      <div className="space-y-4 mb-6">
-        {topSkills.map((skill) => (
-          <div key={skill.name} className="border-b pb-4">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <h3 className="font-semibold text-white">{skill.name}</h3>
-                <p className="text-sm text-gray-300 mt-1">
-                  Endorsed by {skill.endorsements} colleagues
-                </p>
+        {/* Top Skills */}
+        <div className="space-y-4 mb-6">
+          {topSkills.map((skill) => (
+            <div key={skill.name} className="border-b pb-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white">{skill.name}</h3>
+                  <p className="text-sm text-gray-300 mt-1">
+                    Endorsed by {skill.endorsements} colleagues
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleEndorse(skill.name)}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
+                    skill.endorsed
+                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                      : 'border border-blue-600 text-blue-600 hover:bg-blue-50'
+                  }`}
+                >
+                  {skill.endorsed ? 'Endorsed' : 'Endorse'}
+                </button>
               </div>
-              <button
-                onClick={() => handleEndorse(skill.name)}
-                className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
-                  skill.endorsed
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'border border-blue-600 text-blue-600 hover:bg-blue-50'
-                }`}
-              >
-                {skill.endorsed ? 'Endorsed' : 'Endorse'}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Other Skills */}
-      <div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {otherSkills.map((skill) => (
-            <div
-              key={skill.name}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <div>
-                <h4 className="font-medium text-white">{skill.name}</h4>
-                <p className="text-xs text-gray-400">{skill.endorsements} endorsements</p>
-              </div>
-              <button
-                onClick={() => handleEndorse(skill.name)}
-                className={`px-3 py-1 rounded-full text-xs transition-colors ${
-                  skill.endorsed
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'border border-gray-300 text-gray-600 hover:border-blue-600 hover:text-blue-600'
-                }`}
-              >
-                {skill.endorsed ? '✓' : '+'}
-              </button>
             </div>
           ))}
         </div>
 
-        <button className="w-full mt-4 py-2 text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-center space-x-1">
-          <span>Show all skills</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
+        {/* Other Skills */}
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {otherSkills.map((skill) => (
+              <div
+                key={skill.name}
+                className="flex items-center justify-between p-3 border border-zinc-800 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-colors"
+              >
+                <div>
+                  <h4 className="font-medium text-white">{skill.name}</h4>
+                  <p className="text-xs text-gray-400">{skill.endorsements} endorsements</p>
+                </div>
+                <button
+                  onClick={() => handleEndorse(skill.name)}
+                  className={`px-3 py-1 rounded-full text-xs transition-colors ${
+                    skill.endorsed
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'border border-gray-300 text-gray-600 hover:border-blue-600 hover:text-blue-600'
+                  }`}
+                >
+                  {skill.endorsed ? '✓' : '+'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button className="w-full mt-4 py-2 text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-center space-x-1">
+            <span>Show all skills</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* Add Skill Form */}
+      {/* Add Skill Modal */}
       {isAdding && (
-        <div className="mt-4 space-y-3">
-          <input
-            type="text"
-            placeholder="Skill name"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-800 text-white rounded focus:outline-none"
-          />
-          <div className="flex space-x-2">
-            <button
-              onClick={handleAddSkill}
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save'}
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-zinc-900 w-full max-w-md mx-4 p-6 rounded-xl relative">
             <button
               onClick={() => {
                 setIsAdding(false);
                 setNewSkill('');
               }}
-              className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-600"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
             >
-              Cancel
+              <X className="w-5 h-5" />
             </button>
+
+            <h3 className="text-lg font-semibold text-white mb-4">Add a New Skill</h3>
+
+            <input
+              type="text"
+              placeholder="e.g. React, Node.js"
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              className="w-full px-4 py-2 bg-zinc-800 text-white rounded focus:outline-none"
+            />
+
+            <div className="flex justify-end space-x-2 mt-6">
+              <button
+                onClick={() => {
+                  setIsAdding(false);
+                  setNewSkill('');
+                }}
+                className="px-4 py-2 border border-zinc-600 text-white rounded hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddSkill}
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? 'Saving...' : 'Save'}
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

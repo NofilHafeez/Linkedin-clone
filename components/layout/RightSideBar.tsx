@@ -144,58 +144,62 @@ export default function RightSidebar() {
       </div>
       
       {/* People You May Know */}
-      <div className="bg-zinc-900 rounded-lg shadow-sm  border-zinc-700 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-white">People you may know</h2>
-      </div>
+      <div className="bg-zinc-900 rounded-lg shadow-sm p-6">
+  <div className="flex items-center justify-between mb-6">
+    <h2 className="text-lg font-semibold text-white">People you may know</h2>
+  </div>
 
-      {people.length === 0 ? (
-        <p className="text-gray-400 text-center">No people to suggest right now</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {people.map((person) => (
-            <div
-              key={person.id}
-              className="bg-zinc-700 rounded-lg p-4 hover:bg-zinc-600 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-16 h-16 rounded-full overflow-hidden">
-                  <img
-                    src={person.profilePic || '/default-profile.png'}
-                    alt={person.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <button className="text-gray-400 hover:text-gray-300">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="mb-4">
-                <h3 className="font-semibold text-white hover:text-blue-400 cursor-pointer text-sm">
-                  {person.name}
-                </h3>
-                <p className="text-gray-400 text-xs mt-1">{person.title}</p>
-              </div>
-
-              <button
-                onClick={() => sendConnectionRequest(person.id)}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-blue-600 text-blue-400 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Connect</span>
-              </button>
+  {people.length === 0 ? (
+    <p className="text-gray-400 text-center">No people to suggest right now.</p>
+  ) : (
+    <div className="flex flex-col gap-4">
+      {people.map((person) => (
+        <div
+          key={person.id}
+          className="rounded-lg p-4 hover:bg-zinc-700 transition-colors border border-zinc-700"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-16 h-16 rounded-full overflow-hidden">
+              <img
+                src={person.profilePic || '/default.jpg'}
+                alt={`${person.name}'s profile`}
+                className="w-full h-full object-cover"
+              />
             </div>
-          ))}
+            <button
+              className="text-gray-400 hover:text-gray-200"
+              aria-label="Dismiss suggestion"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="mb-4">
+            <h3 className="font-semibold text-white hover:text-blue-400 cursor-pointer text-sm">
+              {person.name}
+            </h3>
+            <p className="text-gray-400 text-xs mt-1">{person.title || 'No title available'}</p>
+          </div>
+
+          <button
+            onClick={() => sendConnectionRequest(person.id)}
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-blue-600 text-blue-400 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Connect</span>
+          </button>
         </div>
-      )}
+      ))}
     </div>
+  )}
+</div>
+
       
       {/* Footer Links */}
-      <div className="bg-zinc-900 rounded-lg  p-4">
+      <div className="rounded-lg  p-4">
         <div className="text-xs text-gray-500 space-y-2">
           <div className="flex flex-wrap gap-x-3 gap-y-1">
-            <a href="#" className="hover:text-blue-600 transition-colors">About</a>
+            <a href="/" className="hover:text-blue-600 transition-colors">About</a>
             <a href="#" className="hover:text-blue-600 transition-colors">Accessibility</a>
             <a href="#" className="hover:text-blue-600 transition-colors">Help Center</a>
           </div>
@@ -207,8 +211,8 @@ export default function RightSidebar() {
             <a href="#" className="hover:text-blue-600 transition-colors">Advertising</a>
             <a href="#" className="hover:text-blue-600 transition-colors">Business Services</a>
           </div>
-          <div className="pt-2 border-t">
-            <span className="text-white">LinkedIn Corporation © 2024</span>
+          <div className="pt-2">
+            <span className="text-white">LinkedIn Corporation © 2025</span>
           </div>
         </div>
       </div>

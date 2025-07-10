@@ -115,7 +115,7 @@ export default function PeopleYouMayKnow() {
               <div className="flex items-start justify-between mb-3">
                 <div className="w-16 h-16 rounded-full overflow-hidden">
                   <img
-                    src={person.profilePic || '/default-profile.png'}
+                    src={person.profilePic || '/default.jpg'}
                     alt={person.name}
                     className="w-full h-full object-cover"
                   />

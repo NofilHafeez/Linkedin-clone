@@ -8,7 +8,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '../../context/NotificationContext';
 
-export default function Header() {
+export default function Header() { 
   const [activeTab, setActiveTab] = useState('home');
   const { user } = useAuth();
   const router = useRouter();
@@ -74,18 +74,37 @@ export default function Header() {
                     </button>
 
                     {activeTab === item.id && (
-                      <div className="absolute right-0 mt-2 w-40 bg-zinc-800 border border-gray-700 rounded-lg z-50">
+                      <div className="absolute right-0 p-2 mt-2 w-68 bg-zinc-900  border-gray-800 rounded-br-lg rounded-l-lg z-50">
+                       
+          <div className='flex gap-2'>
+            <div className="w-18 h-16 rounded-full bg-gray-300 overflow-hidden">
+              <img
+                src={user?.profilePic || '/default.jpg'}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+        
+        
+        <div className="text-center">
+          <h3 className="font-semibold text-left text-white">{user?.name ?? ''}</h3>
+          <p className="text-sm text-gray-300 text-left">{user?.title ?? 'No Title'}</p>
+        </div>
+
+        </div>
+        <div className='flex justify-between mt-5 px-4 py-1 w-full'>
                         <Link href={`/profile/${user?.id}`}>
-                          <button className="w-full text-left px-4 py-2 hover:bg-zinc-700 text-gray-200">
-                            View My Profile
+                          <button className=" border-blue-500 rounded-2xl border-1 text-sm  px-5  text-blue-500">
+                            View Profile
                           </button>
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 text-red-500"
+                          className="border-red-500 rounded-2xl border-1 text-sm  px-5 text-red-500"
                         >
                           Logout
                         </button>
+                        </div>
                       </div>
                     )}
                   </div>

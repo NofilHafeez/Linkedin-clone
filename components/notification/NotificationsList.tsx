@@ -1,185 +1,75 @@
 'use client';
 
-import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNotification } from '../../context/NotificationContext';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import { useSocket } from '../../context/SocketContext';
-import { useNotification } from '../../context/NotificationContext';
 
-
-
-export interface UserBasic {
-  id: string;
-  name: string;
-  profilePic: string | null;
-}
-
-interface Notification {
-  id: number;
-  userId: string;
-  message: string;
-  isRead: boolean;
-  sender: UserBasic;
-  createdAt: string;
-}
 
 export default function NotificationsList() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { user } = useAuth();
-  const socket = useSocket();
-  const {setCount} = useNotification();
-  
+    const { notifications, setCount } = useNotification();
+    const {user} = useAuth();
 
   useEffect(() => {
-    if (!user?.id) return;
-
-    const fetchNotifications = async () => {
-      try {
-        const res = await axios.get(`/api/notifications?userId=${user.id}`, { withCredentials: true });
-        if (res.status === 200) {
-           const all = res.data;
-           const unread = all.filter((n: Notification) => !n.isRead);
-           setNotifications(all);
-           setCount(unread.length); 
-        }
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      }
-    };
-
-    fetchNotifications();
-
-    return () => {
-      axios.put('/api/notifications', { userId: user.id }, { withCredentials: true })
+     axios.put('/api/notifications', { userId: user?.id }, { withCredentials: true })
         .then(() => console.log('Notifications marked as read'))
         .catch((err) => console.error('Error marking notifications as read:', err));
-    };
-  }, [user?.id]);
-
-// useEffect(() => {
-//   if (!socket || !user?.id) return;
-
-//   // Join private room based on user ID
-//   socket.emit('join-room', user.id);
-// }, [socket, user?.id]);
-
-useEffect(() => {
-  if (!socket || !user?.id) return;
-
-  // Join user-specific room
-  socket.emit('join-room', user.id);
-   console.log('Emitted join-room for user', user.id);
-
-
-   socket.on('comment-noti-receive', ({ message, sender }) => {
-    console.log('🔥 Received noti:', message, sender);
-    const newNotification = {
-      id: Date.now(),
-      message,
-      sender,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      userId: user.id,
-    };
     
-    setNotifications((prev) => [newNotification, ...prev]);
-    setCount((prev) => prev + 1);
-
-  });
-
-  // Listen for incoming like notifications
-  socket.on('like-noti-receive', ({ message, sender }) => {
-    console.log('🔥 Received noti:', message, sender);
-    const newNotification = {
-      id: Date.now(),
-      message,
-      sender,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      userId: user.id,
-    };
-    
-    setNotifications((prev) => [newNotification, ...prev]);
-    setCount((prev) => prev + 1);
-
-  });
-
-  socket.on('connect-noti-receive', ({ message, sender }) => {
-    console.log('🔥 Received noti:', message, sender);
-    const newNotification = {
-      id: Date.now(),
-      message,
-      sender,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      userId: user.id,
-    };
-    
-    setNotifications((prev) => [newNotification, ...prev]);
-    setCount((prev) => prev + 1);
-
-  });
+    setCount(0); // reset badge when opening
+  }, [setCount]);
 
 
+  function getTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // in seconds
 
-
-  return () => {
-    socket.off('like-noti-receive');
-    socket.off('comment-noti-receive');
-    socket.off('connect-noti-receive');
-
-
-  };
-}, [socket, user?.id]);
+  if (diff < 60) return `${diff}s`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+  return `${Math.floor(diff / 86400)}d`;
+}
 
 
   return (
-    <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-white">Notifications</h2>
-      </div>
-
-      <div className="space-y-4">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className={`p-4 rounded-lg border transition-colors cursor-default ${
-              !notification.isRead
-                ? 'bg-zinc-700 border-blue-500/30 hover:bg-zinc-600'
-                : 'bg-zinc-800 border-zinc-600 hover:bg-zinc-700'
-            }`}
-          >
-            <div className="flex items-start space-x-3">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full overflow-hidden">
-                  <img
-                    src={notification.sender.profilePic || 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'}
-                    alt={notification.sender.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <p className="text-white">
-                  <span className="font-semibold hover:text-blue-400 cursor-pointer">
-                    {notification.sender.name}
-                  </span>
-                </p>
-
-                {notification.message && (
-                  <p className="text-gray-400 text-sm mt-1 italic">
-                    {notification.message}
-                  </p>
-                )}
-
-                <p className="text-gray-500 text-xs mt-2">{notification.createdAt}</p>
-              </div>
-            </div>
+  <div className="bg-zinc-900 rounded-lg shadow-sm w-full">
+    {notifications.map((notification) => (
+      <div
+        key={notification.id}
+        className={`flex items-start  border-1 justify-between gap-3 px-4 py-3 border-b border-zinc-800 group cursor-pointer transition-colors ${
+          !notification.isRead ? 'bg-zinc-800 border-1 border-b border-zinc-900  hover:bg-zinc-700' : 'hover:bg-zinc-800'
+        }`}
+      >
+        {/* Avatar + Content */}
+        <div className="flex items-start gap-3 flex-1">
+          {/* Avatar */}
+          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+            <img
+              src={notification.sender.profilePic || '/default.jpg'}
+              alt={notification.sender.name}
+              className="w-full h-full object-cover"
+            />
           </div>
-        ))}
+
+          {/* Message */}
+          <div className="flex-1 text-sm text-gray-300">
+            <p>
+              <span className="font-semibold text-white hover:text-blue-400">
+                {notification.sender.name}
+              </span>{' '}
+              {notification.message}
+            </p>
+          </div>
+        </div>
+
+        {/* Time */}
+        <div className="text-xs text-gray-500 whitespace-nowrap pl-2 pt-1 min-w-fit">
+          {getTimeAgo(notification.createdAt)}
+        </div>
       </div>
-    </div>
-  );
+    ))}
+  </div>
+);
+
 }
+ 

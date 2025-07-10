@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { useSocket } from '../../context/SocketContext';
+import { useNotification } from '../../context/NotificationContext';
 
 export interface UserBasic {
   id: string;
@@ -55,6 +56,7 @@ export default function Post({ post }: { post: Post }) {
   const [commentsList, setCommentsList] = useState<Comment[]>(post.comments || []);
   const [loadingLike, setLoadingLike] = useState(false);
   const [showLikesList, setShowLikesList] = useState(false);
+  // const {setCount, setReceiverId} = useNotification();
 
   const handleNotification = async (message: string, receiverId: string) => {
     try {
@@ -72,8 +74,6 @@ export default function Post({ post }: { post: Post }) {
 
     }
 
-
-
   useEffect(() => {
     if (user?.id && post.likes) {
       const liked = post.likes.some((like) => like.userId === user.id);
@@ -82,8 +82,6 @@ export default function Post({ post }: { post: Post }) {
     
   }, [post.likes, user?.id]);
   
-
-
 
 const handleLike = async (postId: string) => {
   if (!user?.id || loadingLike) return;
@@ -126,6 +124,7 @@ const handleLike = async (postId: string) => {
   },
 });
 
+
       }
     }
   } catch (error) {
@@ -137,9 +136,6 @@ const handleLike = async (postId: string) => {
     setLoadingLike(false);
   }
 };
-
-
-
 
 
   const handleComment = async (postId: string) => {
@@ -209,14 +205,14 @@ const handleLike = async (postId: string) => {
 };
 
 
-  return (
+  return ( 
     <div className="bg-zinc-900 rounded-lg relative">
       {/* Post Header */}
       <div className="p-4 flex items-start justify-between">
         <div className="flex space-x-3">
           <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
             <img
-              src={post.user.profilePic || 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'}
+              src={post.user.profilePic || '/default.jpg'}
               className="w-full h-full object-cover"
               alt="Profile"
             />
@@ -266,7 +262,7 @@ const handleLike = async (postId: string) => {
               post.likes.map((like) => (
                 <div key={like.id} className="flex items-center space-x-2 mb-2">
                   <img
-                    src={like.user.profilePic || 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'}
+                    src={like.user.profilePic ||'/default.jpg'}
                     alt="User"
                     className="w-6 h-6 rounded-full object-cover"
                   />
@@ -320,7 +316,7 @@ const handleLike = async (postId: string) => {
               <div key={cmt.id} className="flex space-x-3 items-start">
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <img
-                    src={cmt.commenter?.profilePic || 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'}
+                    src={cmt.commenter?.profilePic || '/default.jpg'}
                     alt="User"
                     className="w-full h-full object-cover"
                   />
@@ -335,7 +331,7 @@ const handleLike = async (postId: string) => {
           <div className="flex space-x-3 mt-4">
             <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
               <img
-                src={user?.profilePic || 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'}
+                src={user?.profilePic || '/default.jpg'}
                 alt="Your profile"
                 className="w-full h-full object-cover"
               />
@@ -350,7 +346,7 @@ const handleLike = async (postId: string) => {
                 onKeyDown={(e) => e.key === 'Enter' && handleComment(post.id)}
               />
               <button
-                onClick={() => {handleComment(post.id); handleNotification(`New comment on your post: "${comment}"`, post.userId)}}
+                onClick={() => handleComment(post.id)}
                 disabled={!comment.trim()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
@@ -362,4 +358,4 @@ const handleLike = async (postId: string) => {
       )}
     </div>
   );
-}
+} 

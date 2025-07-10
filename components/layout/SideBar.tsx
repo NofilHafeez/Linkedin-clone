@@ -1,16 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import axios from 'axios';
+
 import { useAuth } from '../../context/AuthContext';
 
 import { Camera, Users, Eye, Bookmark } from 'lucide-react';
+
+interface User {
+  id: string;
+  name: string;
+  title: string;
+  profilePic: string;
+  bannerPic: string;
+  location: string;
+} 
 
 export default function Sidebar() {
   const profileViews = 1247;
   const postImpressions = 3892;
 
   const { user } = useAuth();
+    if (!user) return null; 
 
   return (
     <div className="space-y-4">
@@ -22,10 +31,10 @@ export default function Sidebar() {
             alt="Banner"
             className="w-full h-full object-cover"
           />
-          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-            <div className="w-16 h-16 rounded-full bg-gray-300 border-4 border-white overflow-hidden">
+          <div className="absolute -bottom-8 left-14 transform -translate-x-1/2">
+            <div className="w-16 h-16 rounded-full bg-gray-300 border-1 border-white overflow-hidden">
               <img
-                src={user.profilePic || 'https://via.placeholder.com/150'}
+                src={user.profilePic || '/default.jpg'}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -34,9 +43,9 @@ export default function Sidebar() {
         </div>
         
         <div className="pt-10 pb-4 px-6 text-center">
-          <h3 className="font-semibold text-white">{user?.name ?? ''}</h3>
-          <p className="text-sm text-gray-300 mt-1">{user?.title ?? 'No Title'}</p>
-          <p className="text-xs text-gray-500 mt-2">{user?.location ?? 'No Location'}</p>
+          <h3 className="font-semibold text-left text-white">{user?.name ?? ''}</h3>
+          <p className="text-xs text-gray-300 text-left mt-1 ">{user?.title ?? 'No Title'}</p>
+          <p className="text-xs text-gray-500 text-left mt-0.5 ">{user?.location ?? 'No Location'}</p>
         </div>
         
         <div className="border-t px-6 py-3">

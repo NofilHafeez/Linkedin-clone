@@ -56,7 +56,7 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
     };
   }, [user?.id, roomId]);
 
-  const fetchMessages = async () => {
+const fetchMessages = async () => {
     try {
       const res = await axios.get(`/api/messages?roomId=${roomId}`);
       const formatted = res.data.map((m: Message) => ({
@@ -69,25 +69,37 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || !user?.id) return;
-    if (!socket) return;
+ const handleSendMessage = async () => {
+  if (!message.trim() || !user?.id) return;
+  if (!socket) return;
 
-    try {
-      const res = await axios.post('/api/messages', {
-        senderId: user.id,
-        text: message,
-        roomId,
-      });
-
-      const savedMessage = res.data.newMessage;
-
-      socket.emit('send-message', { ...savedMessage, roomId });
-      setMessage('');
-    } catch (err) {
-      console.error('Failed to send message:', err);
-    }
+  const localMessage: Message = {
+    text: message,
+    senderId: user.id,
+    createdAt: new Date().toISOString(),
+    isOwn: true,
   };
+
+  // ✅ Instantly show message in chat UI
+  setChat((prev) => [...prev, localMessage]);
+  setMessage('');
+
+  try {
+    const res = await axios.post('/api/messages', {
+      senderId: user.id,
+      text: message,
+      roomId,
+    });
+
+    const savedMessage = res.data.newMessage;
+
+    // Optionally update the sent message with server ID later if needed
+    // OR just emit to others:
+    socket.emit('send-message', { ...savedMessage, roomId });
+  } catch (err) {
+    console.error('Failed to send message:', err);
+  }
+};
 
   if (!roomId || !otherUser) {
     return (
@@ -143,7 +155,7 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
           <div key={idx} className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${msg.isOwn ? 'flex-row-reverse space-x-reverse' : ''}`}>
               <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                <img src={msg.isOwn ? user?.profilePic || '/default-profile.png' : otherUser.profilePic || '/default-profile.png'} alt="avatar" className="w-full h-full object-cover" />
+                <img src={msg.isOwn ? user?.profilePic || '/default-profile.png' : otherUser.profilePic || '/default.jpg'} alt="avatar" className="w-full h-full object-cover" />
               </div>
               <div className={`px-4 py-2 rounded-2xl ${msg.isOwn ? 'bg-blue-600 text-white' : 'bg-zinc-700 text-gray-100'}`}>
                 <p className="text-sm">{msg.text}</p>

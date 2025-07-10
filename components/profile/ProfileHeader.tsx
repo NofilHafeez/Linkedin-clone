@@ -95,7 +95,7 @@ const handleEditProfile = async (file: File, type: 'profile' | 'banner') => {
         <div className="relative -mt-20 mb-4">
           <div className="w-40 h-40 rounded-full border-4 border-white bg-gray-300 overflow-hidden">
             <img
-              src={user.profilePic || 'https://via.placeholder.com/150'}
+              src={user.profilePic || '/default.jpg'}
               alt="Profile"
               className="w-full h-full object-cover"
             />

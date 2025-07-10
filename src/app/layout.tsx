@@ -4,6 +4,8 @@ import { AuthProvider } from "../../context/AuthContext";
 import "./globals.css";
 import { SocketProvider } from "../../context/SocketContext";
 import { NotificationProvider } from "../../context/NotificationContext";
+import NotificationInitializer from "../../components/NotificationInitializer";
+
 
 const sourceSans = Source_Sans_3({
   variable: "--font-source-sans",
@@ -30,13 +32,13 @@ export default function RootLayout({
       <body
         className={`${sourceSans.variable} ${sourceMono.variable}antialiased`}
       >
-        <NotificationProvider>
-          <SocketProvider>
-              <AuthProvider>
-                  {children}
-              </AuthProvider>
-          </SocketProvider> 
-       </NotificationProvider>
+       <AuthProvider> {/* ✅ Auth must come first */}
+      <SocketProvider>
+        <NotificationProvider> {/* ✅ Now safe to use useAuth() here */}
+          {children}
+        </NotificationProvider>
+      </SocketProvider>
+    </AuthProvider>
       </body>
     </html>
   );

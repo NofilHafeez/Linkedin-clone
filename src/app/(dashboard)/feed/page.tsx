@@ -8,19 +8,7 @@ import { useEffect } from 'react';
 import { useSocket } from '../../../../context/SocketContext';
 
 export default function feedPage() {
-  const socket = useSocket();
  
-  useEffect(() => {
-    if (!socket) {
-      console.error('Socket is not initialized');
-      return;
-    };
-   
-    socket.on('connect', () => {
-      console.log('✅ Connected to WS server:', socket.id);
-    });
-
- }, []);
 
   return (
     <div className="min-h-screen bg-zinc-black">

@@ -22,7 +22,7 @@ export default function NotificationsPage() {
 
           {/* Footer Links */}
           <div className="lg:col-span-3">
-      <div className="bg-zinc-900 rounded-lg  p-4">
+      <div className="rounded-lg  p-4">
         <div className="text-xs text-gray-500 space-y-2">
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             <a href="#" className="hover:text-blue-600 transition-colors">About</a>
@@ -38,7 +38,7 @@ export default function NotificationsPage() {
             <a href="#" className="hover:text-blue-600 transition-colors">Business Services</a>
           </div>
           <div className="pt-2 border-t">
-            <span className="text-white">LinkedIn Corporation © 2024</span>
+            <span className="text-white">LinkedIn Corporation © 2025</span>
           </div>
         </div>
       </div>

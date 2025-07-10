@@ -1,17 +1,17 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-// Create a Map to store user IDs and their socket IDs
-const userSocketMap = new Map();
-
 
 const httpServer = createServer();
 
 const io = new Server(httpServer, {
   cors: {
     origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
     credentials: true
   },
+  transports: ['websocket'],
 });
+
 
 io.on('connection', (socket) => {
   console.log('✅ WS Client connected:', socket.id);
@@ -28,37 +28,18 @@ io.on('connection', (socket) => {
 
   socket.on('send-like-noti', ({ message, receiverId, sender }) => {
     console.log(`📨 Sending to ${receiverId}: ${message}`);
-    io.to(receiverId).emit('like-noti-receive', { message, sender });
+    io.to(receiverId).emit('like-noti-receive', { message, sender, receiverId });
   });
 
    socket.on('send-comment-noti', ({ message, receiverId, sender }) => {
     console.log(`📨 Sending to ${receiverId}: ${message}`);
-    io.to(receiverId).emit('comment-noti-receive', { message, sender });
+    io.to(receiverId).emit('comment-noti-receive', { message, sender, receiverId  });
   });
 
   socket.on('send-connect-noti', ({ message, receiverId, sender }) => {
     console.log(`📨 Sending to ${receiverId}: ${message}`);
-    io.to(receiverId).emit('connect-noti-receive', { message, sender });
+    io.to(receiverId).emit('connect-noti-receive', { message, sender, receiverId });
   });
-
-
-
-
-
-
-
-  // socket.on('send-like-noti', ({ name, message, receiverId }) => {
-  //   console.log('Comment:', name, message, receiverId);
-  //   //  emit to receiver
-  //    const receiverSocketId = userSocketMap.get(receiverId);
-  //   if (receiverSocketId) {
-  //     io.to(receiverSocketId).emit('like-noti-receive', { name, message, receiverId });
-  //   }
-
-  // });
-
-    // User joins room named after their userI
-
 
  
   socket.on('send-message', (data) => {

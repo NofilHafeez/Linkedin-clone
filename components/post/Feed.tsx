@@ -73,9 +73,14 @@ export default function Feed() {
       <PostCreator />
       
       <div className="space-y-4">
-        {posts.map((post) => (
+        {posts.length === 0 ?
+        (<h1 className="text-white text-xs text-center">No posts available</h1>)
+        : (
+          posts.map((post) => (
           <Post key={post.id} post={post} />
-        ))}
+        ))
+        )}
+        
       </div>
     </div>
   );
