@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import toast from 'react-hot-toast';
 
 
 interface Message {
@@ -65,6 +66,7 @@ const fetchMessages = async () => {
       }));
       setChat(formatted);
     } catch (err) {
+      toast.error("Failed to fetch chat messages")
       console.error('Error fetching messages:', err);
     }
   };
@@ -80,7 +82,6 @@ const fetchMessages = async () => {
     isOwn: true,
   };
 
-  // ✅ Instantly show message in chat UI
   setChat((prev) => [...prev, localMessage]);
   setMessage('');
 
@@ -90,13 +91,12 @@ const fetchMessages = async () => {
       text: message,
       roomId,
     });
-
+    if (res.data) {
     const savedMessage = res.data.newMessage;
-
-    // Optionally update the sent message with server ID later if needed
-    // OR just emit to others:
     socket.emit('send-message', { ...savedMessage, roomId });
+    } 
   } catch (err) {
+    toast.error("Failed to send message")
     console.error('Failed to send message:', err);
   }
 };

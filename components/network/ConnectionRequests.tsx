@@ -4,6 +4,7 @@ import { Check, X, MoreHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 interface ConnectionRequest {
   id: string;
@@ -49,13 +50,12 @@ export default function ConnectionRequests() {
       });
 
       if (res.status === 200) {
-        console.log('Connection request updated:', res.data);
         setRequests((prev) => prev.filter((req) => req.id !== connectionId));
-      } else {
-        console.error('Failed to update connection request:', res.data);
-      }
+        toast.success("Connection request accepted!")
+      } 
     } catch (error) {
-      console.error('Error updating connection request:', error);
+      toast.error("Failed upating connection request");
+      console.error('Error updating connection request:');
     }
   };
 

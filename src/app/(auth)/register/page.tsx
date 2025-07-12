@@ -4,6 +4,8 @@ import Link from "next/link";
 import axios from "axios";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from 'react-hot-toast'
+
 
 export default function RegisterPage() {
   const router = useRouter(); 
@@ -15,7 +17,6 @@ export default function RegisterPage() {
   }
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ text: string | null, type: 'success' | 'error' | null }>({ text: null, type: null });
   const [user, setUser] = useState<User>({
     name: "",
     email: "",
@@ -32,29 +33,13 @@ const handleRegister = async () => {
     setUser({ name: "", email: "", password: "" });
 
     if (res.status === 200) {
-      setMessage({
-        text: data.message || "Registration successful! Redirecting to feed...",
-        type: "success",
-      });
-
-      setTimeout(() => {
-        setMessage({ text: null, type: null });
-        router.push("/feed");
-      }, 1500);  // Small delay to show success message before redirect
+      toast.success( "Registration successful! Redirecting to login page...") 
+      router.push("/feed");
     }
   } catch (err: any) {
-    console.error("Signup request failed:", err);
-
+    toast.error("Signup request failed:", err);
     const apiMessage = err?.response?.data?.message;
-
-    setMessage({
-      text: apiMessage || "Something went wrong. Please try again.",
-      type: "error",
-    });
-
-    setTimeout(() => {
-      setMessage({ text: null, type: null });
-    }, 5000);
+    toast.error( apiMessage || "Something went wrong. Please try again.")
   } finally {
     setLoading(false);
   }
@@ -62,18 +47,6 @@ const handleRegister = async () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black text-white px-4">
-      
-      {/* Message Banner */}
-      {message.text && (
-        <div
-          className={`fixed top-0 left-0 w-full text-white text-center py-3 z-50 shadow-md ${
-            message.type === "error" ? "bg-red-600" : "bg-green-600"
-          }`}
-        >
-          <p className="text-sm">{message.text}</p>
-        </div>
-      )}
-
       {/* Form Card */}
       <div className="bg-zinc-900 rounded-lg w-full max-w-sm p-6 space-y-6 shadow-lg">
         <div className="flex justify-center">

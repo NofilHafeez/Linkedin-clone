@@ -4,7 +4,7 @@ import { AuthProvider } from "../../context/AuthContext";
 import "./globals.css";
 import { SocketProvider } from "../../context/SocketContext";
 import { NotificationProvider } from "../../context/NotificationContext";
-import NotificationInitializer from "../../components/NotificationInitializer";
+import { Toaster } from 'react-hot-toast';
 
 
 const sourceSans = Source_Sans_3({
@@ -35,6 +35,43 @@ export default function RootLayout({
        <AuthProvider> {/* ✅ Auth must come first */}
       <SocketProvider>
         <NotificationProvider> {/* ✅ Now safe to use useAuth() here */}
+          <Toaster
+  toastOptions={{
+    style: {
+      background: '#333',
+      color: '#fff',
+    },
+    success: {
+      style: {
+        background: 'green',
+      },
+    },
+    error: {
+      style: {
+        background: 'red',
+      },
+    },
+  }}
+/>
+<Toaster
+  toastOptions={{
+    style: {
+      background: '#333',
+      color: '#fff',
+    },
+    success: {
+      style: {
+        background: 'green',
+      },
+    },
+    error: {
+      style: {
+        background: 'red',
+      },
+    },
+  }}
+/>
+  
           {children}
         </NotificationProvider>
       </SocketProvider>

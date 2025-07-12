@@ -4,6 +4,7 @@ import { Edit, Plus, Calendar, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 interface EducationEntry {
   id: string;
@@ -31,48 +32,58 @@ export default function EducationSection({ education = [] }: { education?: Educa
   const [logo, setLogo] = useState('');
 
   const handleAddEducation = async () => {
-    if (!user?.id) return;
+  if (!user?.id) return;
 
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('userId', user.id);
-      formData.append('education', JSON.stringify({
+  if (!school || !degree || !field || !duration) {
+    toast('Please fill in all required fields.');
+    return;
+  }
+
+  const activityList = activities.split(',').map((a) => a.trim());
+  setLoading(true);
+
+  try {
+    const formData = new FormData();
+    formData.append('userId', user.id);
+    formData.append('education', JSON.stringify({
+      school,
+      degree,
+      field,
+      duration,
+      description,
+      activities: activityList,
+      logo,
+    }));
+
+    const res = await axios.post('/api/edit-profile', formData, {
+      withCredentials: true,
+    });
+
+    if (res.status === 200) {
+      const newEducation: EducationEntry = {
+        id: Date.now().toString(),
         school,
         degree,
         field,
         duration,
         description,
-        activities: activities.split(',').map(a => a.trim()),
+        activities: activityList,
         logo,
-      }));
+      };
 
-      const res = await axios.post('/api/edit-profile', formData, {
-        withCredentials: true,
-      });
-
-      if (res.status === 200) {
-        const newEducation: EducationEntry = {
-          id: Date.now().toString(),
-          school,
-          degree,
-          field,
-          duration,
-          description,
-          activities: activities.split(',').map(a => a.trim()),
-          logo,
-        };
-
-        setEducationList(prev => [...prev, newEducation]);
-        setIsAdding(false);
-        resetForm();
-      }
-    } catch (error) {
-      console.error('Error adding education:', error);
-    } finally {
-      setLoading(false);
+      setEducationList((prev) => [...prev, newEducation]);
+      setIsAdding(false);
+      resetForm();
+      toast.success('Education added successfully!');
     }
-  };
+  } catch (error) {
+    toast.error('Failed to add education.');
+    console.error('Error adding education:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const resetForm = () => {
     setSchool('');

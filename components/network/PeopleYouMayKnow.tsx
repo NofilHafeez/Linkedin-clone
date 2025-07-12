@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import toast from 'react-hot-toast';
 
 interface Person {
   id: string;
@@ -22,14 +23,9 @@ export default function PeopleYouMayKnow() {
  const handleNotification = async (message: string, receiverId: string) => {
     try {
       const res = await axios.post('api/notifications', {message, senderId: user?.id, receiverId}, {withCredentials: true});
-    
-      if (res.status === 201) {
-        console.log('Notification sent successfully');
-      }else {
-        console.error('Failed to send notification:', res.data);
-      }
-    }catch (error) {
-        console.error('Error sending notification:', error);
+    }catch (err) {
+        toast.error("Failed sending notifications")
+        console.error('Error sending notification:');
       }
 
     }
@@ -45,13 +41,12 @@ export default function PeopleYouMayKnow() {
         });
 
         if (response.data) {
-          console.log('Fetched people you may know:', response.data);
           setPeople(response.data.similarUsers || []);
         } else {
-          console.error('No data received from API');
+          toast.error('No data received from API');
         }
-      } catch (error) {
-        console.error('Error fetching people you may know:', error);
+      } catch (err) {
+        toast.error('Error fetching:' + (err instanceof Error ? err.message : String(err)));
       }
     };
 
@@ -60,7 +55,7 @@ export default function PeopleYouMayKnow() {
 
   const sendConnectionRequest = async (receiverId: string) => {
     if (!user?.id) {
-      console.error('User ID is missing.');
+      toast.error('User ID is missing.');
       return;
     }
 
@@ -89,9 +84,10 @@ export default function PeopleYouMayKnow() {
           });
       }
   }
-        console.log('Connection request sent successfully');
+        toast.success('Connection request sended!!');
       }
     } catch (error) {
+      toast.error('Failed sending connection request')
       console.error('Error sending connection request:', error);
     }
   };

@@ -3,6 +3,7 @@
 import { Camera, Edit, Plus, MessageCircle, MoreHorizontal, MapPin, Building, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 interface User {
   id: string;
@@ -33,9 +34,9 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   
 
-const handleEditProfile = async (file: File, type: 'profile' | 'banner') => {
+const handleImageUpload = async (file: File, type: 'profile' | 'banner') => {
   if (!user?.id) {
-    alert("User ID is required.");
+    toast("User ID is required.");
     return;
   }
 
@@ -43,9 +44,6 @@ const handleEditProfile = async (file: File, type: 'profile' | 'banner') => {
   formData.append('image', file);
   formData.append('userId', user.id);
   formData.append('type', type);
-  formData.append('name', editedName);
-  formData.append('title', editedTitle);
-  formData.append('location', editedLocation);
 
   try {
     const response = await axios.post('/api/edit-profile', formData, {
@@ -55,21 +53,46 @@ const handleEditProfile = async (file: File, type: 'profile' | 'banner') => {
 
     const updatedImageUrl = response.data.imageUrl;
 
-    // Instantly update local state
     if (type === 'profile') {
       user.profilePic = updatedImageUrl;
+      setShowProfileImageModal(false);
+      toast.success("Profile picture updated");
     } else if (type === 'banner') {
       user.bannerPic = updatedImageUrl;
+      setShowBannerImageModal(false);
+      toast.success("Banner picture updated");
     }
-
-    setShowProfileImageModal(false);
-    setShowBannerImageModal(false);
   } catch (error) {
-    console.error('Error updating profile:', error);
+    toast.error("Failed to upload image");
+    console.error(error);
   }
 };
 
 
+const handleTextEdit = async () => {
+  if (!user?.id) {
+    toast("User ID is required.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('userId', user.id);
+  formData.append('name', editedName);
+  formData.append('title', editedTitle);
+  formData.append('location', editedLocation);
+
+  try {
+    const response = await axios.post('/api/edit-profile', formData, {
+      withCredentials: true,
+    });
+
+    toast.success("Profile details updated");
+    setShowEditModal(false);
+  } catch (error) {
+    toast.error("Failed to update profile details");
+    console.error(error);
+  }
+};
 
 
   return (
@@ -240,7 +263,10 @@ const handleEditProfile = async (file: File, type: 'profile' | 'banner') => {
               </button>
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                onClick={handleEditProfile}
+                onClick={() => {
+                  handleTextEdit();
+                  setShowEditModal(false);
+                }}
               >
                 Save
               </button>
@@ -271,7 +297,7 @@ const handleEditProfile = async (file: File, type: 'profile' | 'banner') => {
   className="px-4 py-2 mt-4 bg-blue-600 text-white rounded hover:bg-blue-700"
   onClick={() => {
     if (imageFile) {
-      handleEditProfile(imageFile, 'profile');
+      handleImageUpload(imageFile, 'profile');
     } else {
       alert("Please select an image first.");
     }
@@ -306,7 +332,7 @@ const handleEditProfile = async (file: File, type: 'profile' | 'banner') => {
   className="px-4 py-2 mt-4 bg-blue-600 text-white rounded hover:bg-blue-700"
   onClick={() => {
     if (imageFile) {
-      handleEditProfile(imageFile, 'banner');
+      handleImageUpload(imageFile, 'banner');
     } else {
       alert("Please select an image first.");
     }

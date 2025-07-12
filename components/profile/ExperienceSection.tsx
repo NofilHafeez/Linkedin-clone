@@ -4,6 +4,7 @@ import { Edit, Plus, Building, Calendar, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 interface Experience {
   id: string;
@@ -34,6 +35,11 @@ export default function ExperienceSection({ experience = [] }: { experience?: Ex
 
   const handleAddExperience = async () => {
     if (!user?.id) return;
+
+    if (!title || !company || !location || !duration || !totalTime || !type || !description) {
+      toast("All fields are required");
+      return
+    }
 
     setLoading(true);
     try {
@@ -70,8 +76,11 @@ export default function ExperienceSection({ experience = [] }: { experience?: Ex
         setExperienceList(prev => [...prev, newExp]);
         resetForm();
         setIsAdding(false);
+        toast.success("Experience added successfully");
       }
+
     } catch (error) {
+      toast.error("Failed to add experience");
       console.error('Error adding experience:', error);
     } finally {
       setLoading(false);

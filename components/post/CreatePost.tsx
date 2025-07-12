@@ -4,6 +4,7 @@ import { Camera, Video, Calendar, FileText, X } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function PostCreator() {
   const [text, setText] = useState('');
@@ -13,7 +14,7 @@ export default function PostCreator() {
 
   const handlePost = async () => {
     if (!text.trim() || !imageFile || !user?.id) {
-      alert("Text, Image, and User are required.");
+      toast.error("Text, Image, and User are required.");
       return;
     }
 
@@ -28,15 +29,16 @@ export default function PostCreator() {
       });
 
       if (res.data) {
-        console.log("Post created successfully:", res.data.post);
+        toast.success("Post Created!")
         setText('');
         setImageFile(null);
         setShowModal(false);
       } else {
-        console.error(res.data.error || "Failed to create post");
+        toast.error(res.data.error || "Failed to create post");
         alert(res.data.error || "Failed to create post");
       }
     } catch (error) {
+      toast.error("Failed when creating post")
       console.error("Error creating post:", error);
     }
   };

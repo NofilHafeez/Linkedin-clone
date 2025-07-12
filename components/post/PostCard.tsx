@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { useSocket } from '../../context/SocketContext';
-import { useNotification } from '../../context/NotificationContext';
+import toast from 'react-hot-toast';
 
 export interface UserBasic {
   id: string;
@@ -56,6 +56,7 @@ export default function Post({ post }: { post: Post }) {
   const [commentsList, setCommentsList] = useState<Comment[]>(post.comments || []);
   const [loadingLike, setLoadingLike] = useState(false);
   const [showLikesList, setShowLikesList] = useState(false);
+  
   // const {setCount, setReceiverId} = useNotification();
 
   const handleNotification = async (message: string, receiverId: string) => {
@@ -65,10 +66,9 @@ export default function Post({ post }: { post: Post }) {
       if (res.status === 201) {
         console.log('Notification sent successfully');
         
-      }else {
-        console.error('Failed to send notification:', res.data);
       }
     }catch (error) {
+      toast.error("Failed sending notifications")
         console.error('Error sending notification:', error);
       }
 
@@ -115,21 +115,19 @@ const handleLike = async (postId: string) => {
 
       if (socket) {
         socket.emit('send-like-noti', {
-  message: 'Liked your post',
-  receiverId: post.userId,
-  sender: {
-    id: user.id,
-    name: user.name,
-    profilePic: user.profilePic,
-  },
-});
-
-
+              message: 'Liked your post',
+              receiverId: post.userId,
+              sender: {
+                id: user.id,
+                name: user.name,
+                profilePic: user.profilePic,
+            },
+        });
       }
     }
-  } catch (error) {
-    console.error('❌ Error toggling like:', error);
-    // Revert optimistic update if error
+  } catch (err) {
+    toast.error('Failed while performing like:');
+    console.log('Error while performing like:', err)
     setIsLiked(!newLikeState);
     setLikesCount((prev) => prev - likeDelta);
   } finally {
@@ -193,13 +191,9 @@ const handleLike = async (postId: string) => {
           });
       }
   }
-  else {
-      console.log('Comment posted successfully');
-    }
-
   } catch (error) {
+    toast.error('Failed posting comment')
     console.error('Error posting comment:', error);
-    // Optional: Remove the temporary comment or show error message
     setCommentsList((prev) => prev.filter((c) => c.id !== tempComment.id));
   }
 };

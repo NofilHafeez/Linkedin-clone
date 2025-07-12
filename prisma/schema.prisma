@@ -49,8 +49,10 @@ model User {
 
   likes         Like[]
   comments      Comment[]
+  saveItem      Post[]
 
 }
+
 
 
 model Post {

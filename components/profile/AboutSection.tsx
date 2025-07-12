@@ -4,6 +4,8 @@ import { Edit, X } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import toast from 'react-hot-toast';
+
 
 export default function AboutSection({ bio }: { bio?: string }) {
   const { user } = useAuth();
@@ -11,29 +13,38 @@ export default function AboutSection({ bio }: { bio?: string }) {
   const [editedBio, setEditedBio] = useState(bio || '');
   const [loading, setLoading] = useState(false);
 
-  const handleSave = async () => {
-    if (!user?.id) return;
+const handleSave = async () => {
+  if (!user?.id) return;
 
-    setLoading(true);
+  if (editedBio.trim() === user.bio?.trim()) {
+    toast('No changes made.');
+    setIsEditing(false);
+    return;
+  }
 
-    try {
-      const formData = new FormData();
-      formData.append('userId', user.id);
-      formData.append('bio', editedBio);
+  setLoading(true);
 
-      const res = await axios.post('/api/edit-profile', formData, {
-        withCredentials: true,
-      });
+  try {
+    const formData = new FormData();
+    formData.append('userId', user.id);
+    formData.append('bio', editedBio.trim());
 
-      if (res.status === 200) {
-        setIsEditing(false);
-      }
-    } catch (error) {
-      console.error('Error updating bio:', error);
-    } finally {
-      setLoading(false);
+    const res = await axios.post('/api/edit-profile', formData, {
+      withCredentials: true,
+    });
+
+    if (res.status === 200) {
+      setIsEditing(false);
+      toast.success('About section updated');
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error('Error updating bio. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>

@@ -3,6 +3,7 @@
 import { Edit, Heart, MessageCircle, Share, X } from 'lucide-react';
 import { useState,useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 import axios from 'axios';
 
 interface Post {
@@ -27,9 +28,10 @@ export default function ActivitySection() {
         if (response.status === 200 && Array.isArray(response.data)) {
           setPosts(response.data);
         } else {
-          console.error('Unexpected response format:', response.data);
+          toast.error('Unexpected response format:');
         }
       } catch (error) {
+        toast.error("Error fetching posts")
         console.error('Error fetching posts:', error);
       }
     };

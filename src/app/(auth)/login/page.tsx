@@ -6,6 +6,7 @@ import Link from 'next/link';
 import axios from 'axios';
 import { useAuth } from '../../../../context/AuthContext';
 import { useSocket } from '../../../../context/SocketContext';
+import toast from 'react-hot-toast'
 
 export default function LoginPage() {
    const router = useRouter(); 
@@ -25,7 +26,6 @@ export default function LoginPage() {
 
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ text: string | null, type: 'success' | 'error' | null }>({ text: null, type: null });
   const [loginUser, setLoginUser] = useState<User>({
     email: "",
     password: "",
@@ -38,17 +38,15 @@ const handleLogin = async () => {
     const data = res.data;
 
     if (res.status === 200) {
-      setMessage({
-        text: data.message || "Login successful! Redirecting to feed...",
-        type: "success",
-      });
+      toast.success("Login successful! Redirecting to feed...")
+    
 
       setLoginUser({ email: "", password: "" }); 
       fetchUser();
        // Clear form AFTER successful login
 
       setTimeout(() => {
-        setMessage({ text: null, type: null });
+       
         router.push("/feed");
       }, 1500);
     }
@@ -57,14 +55,8 @@ const handleLogin = async () => {
 
     const apiMessage = err?.response?.data?.message;
 
-    setMessage({
-      text: apiMessage || "Something went wrong. Please try again.",
-      type: "error",
-    });
+    toast.error("Something went wrong. Please try again.")
 
-    setTimeout(() => {
-      setMessage({ text: null, type: null });
-    }, 5000);
   } finally {
     setLoading(false);
   }
@@ -72,17 +64,7 @@ const handleLogin = async () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-4">
-       {/* Message Banner */}
-      {message.text && (
-        <div
-          className={`fixed top-0 left-0 w-full text-white text-center py-3 z-50 shadow-md ${
-            message.type === "error" ? "bg-red-600" : "bg-green-600"
-          }`}
-        >
-          <p className="text-sm">{message.text}</p>
-        </div>
-      )}
-
+      
       <div className="max-w-md w-full bg-zinc-900 p-8 rounded-lg text-gray-200">
         <h2 className="text-2xl font-bold mb-6 text-center text-blue-500">Login</h2>
 
