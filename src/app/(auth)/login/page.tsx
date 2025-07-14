@@ -19,9 +19,11 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-  if (!socket || !user?.id) return;
-
-  socket.emit('login-user', user.id);
+  if (user?.id && socket?.connected) {
+    socket.emit('set-user-id', user.id); // mark current socket ID as active user
+    socket.emit('user-status', { userId: user.id, status: 'online' });
+  }
+   
 }, [socket, user?.id]);
 
 

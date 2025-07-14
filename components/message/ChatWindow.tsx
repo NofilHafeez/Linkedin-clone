@@ -16,11 +16,18 @@ interface Message {
   isOwn?: boolean;
 }
 
+export enum Status {
+  online = 'online',
+  offline = 'offline',
+  away = 'away',
+}
+
 interface User {
   id: string;
   name: string;
   profilePic: string;
   isOnline?: boolean;
+  status: Status;
 }
 
 export default function ChatWindow({ roomId, otherUser }: { roomId: string; otherUser: User }) {
@@ -29,16 +36,14 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
   const { user } = useAuth();
   const socket = useSocket();
 
+  console.log(otherUser);
+
   useEffect(() => {
     if (!user?.id || !roomId) return;
 
     fetchMessages();
 
     if (!socket) return;
-
-    // socket.on('connect', () => {
-    //   console.log('✅ Connected to WS server:', socket.id);
-    // });
 
     socket.emit('join-room', roomId);
 
@@ -51,6 +56,8 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
         },
       ]);
     });
+
+    
 
     return () => {
       socket.disconnect();
@@ -123,12 +130,12 @@ const fetchMessages = async () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-500'} border-2 border-zinc-800 rounded-full`} />
+            <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${otherUser.status === "online" ? 'bg-green-500' : 'bg-gray-500'} border-2 border-zinc-800 rounded-full`} />
           </div>
           <div>
             <h3 className="font-semibold text-white">{otherUser?.name || 'Chat'}</h3>
-            <p className={`text-sm ${otherUser?.isOnline ? 'text-green-400' : 'text-gray-400'}`}>
-              {otherUser?.isOnline ? 'Active now' : 'Offline'}
+            <p className={`text-sm ${otherUser.status === 'online' ? 'text-green-400' : 'text-gray-400'}`}>
+              {otherUser.status === 'online' ? 'online' : 'Offline'}
             </p>
           </div>
         </div>

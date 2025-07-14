@@ -2,12 +2,20 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useSocket } from './SocketContext';
-import { useAuth } from './AuthContext';
+import { useAuth, } from './AuthContext';
+
+export enum Status {
+  online = 'online',
+  offline = 'offline',
+  away = 'away',
+}
+
 
 export interface UserBasic {
   id: string;
   name: string;
   profilePic: string | null;
+  status: Status;
 }
 
 export interface Notification {
@@ -31,7 +39,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
   const [count, setCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const socket = useSocket();
-  const { user } = useAuth();
+  const { user, setUser, fetchUser } = useAuth();
  
   // Join socket room
   useEffect(() => {
@@ -39,7 +47,50 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       socket.emit('join-room', user.id);
       console.log('✅ Joined socket room:', user.id);
     }
+    
   }, [socket, user?.id]);
+
+  useEffect(() => {
+  if (socket && user?.id) {
+    socket.emit('set-user-id', user.id); // for disconnect logic
+    socket.emit('user-status', { userId: user.id, status: 'online' });
+  }
+
+  const handleUnload = () => {
+    socket?.emit('user-status', { userId: user?.id, status: 'offline' });
+  };
+
+  window.addEventListener('beforeunload', handleUnload);
+
+  return () => {
+    window.removeEventListener('beforeunload', handleUnload);
+    socket?.emit('user-status', { userId: user?.id, status: 'offline' });
+  };
+}, [user?.id, socket]);
+
+useEffect(() => {
+  if (!socket || !user?.id) return;
+
+  const handleStatusChange = ({ userId, status }: { userId: string; status: string }) => {
+    // Only update if the status is for the current user
+    if (userId === user.id) {
+      setUser(prev => prev ? { ...prev, status: status as Status } : prev);
+    }
+  };
+
+  socket.on('user-status-change', handleStatusChange);
+  fetchUser();
+
+  return () => {
+    socket.off('user-status-change', handleStatusChange);
+  };
+}, [socket, user?.id]);
+
+
+
+
+
+  
 
   // Fetch notifications initially
   useEffect(() => {

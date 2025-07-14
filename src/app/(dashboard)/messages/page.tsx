@@ -3,11 +3,33 @@
 import Header from '@/../components/layout/Header';
 import MessageSidebar from '@/../components/message/MessageSideBar';
 import ChatWindow from '@/../components/message/ChatWindow';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSocket } from '../../../../context/SocketContext';
 
 export default function MessagingPage() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [otherUser, setOtherUser] = useState<any | null>(null); 
+
+  const socket = useSocket();
+
+useEffect(() => {
+  if (!socket) return;
+
+  const handleStatusChange = ({ userId, status }: { userId: string; status: string }) => {
+    setOtherUser((prev) => {
+      if (!prev || prev.id !== userId) return prev;
+      return { ...prev, status }; // ✅ updates status
+    });
+  };
+
+  socket.on('user-status-change', handleStatusChange);
+
+  return () => {
+    socket.off('user-status-change', handleStatusChange);
+  };
+}, [socket]);
+
+
   return (
     <div className="min-h-screen">
       <Header />

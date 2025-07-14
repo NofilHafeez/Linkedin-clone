@@ -73,6 +73,7 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
     const createdRoom = res.data.room;
     const otherUser = connections.find((c) => c.id === selectedUserId);
 
+
     if (!otherUser) return;
 
     onRoomSelect(createdRoom.id, otherUser);

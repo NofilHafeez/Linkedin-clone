@@ -7,12 +7,14 @@ import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '../../context/NotificationContext';
+import { useSocket } from '../../context/SocketContext';
 
 export default function Header() { 
   const [activeTab, setActiveTab] = useState('home');
   const { user } = useAuth();
   const router = useRouter();
   const { count } = useNotification(); // ✅ Only call it once
+  const socket = useSocket();
 
   useEffect(() => {
     console.log('✅ Notification count in Header:', count);
@@ -29,6 +31,12 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await axios.post('/api/auth/logout');
+      // In logout handler (frontend)
+if (socket && user?.id) {
+  socket.emit('user-status', { userId: user.id, status: 'offline' });
+  socket.disconnect(); // Force disconnect if desired
+}
+
       router.push('/login');
     } catch (error) {
       console.error('Logout failed:', error);

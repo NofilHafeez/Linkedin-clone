@@ -29,7 +29,9 @@ export async function GET(request: NextRequest) {
             name: true,
             profilePic: true,
             title: true,
-            createdAt: true, // Include createdAt for sorting
+            createdAt: true,
+            status: true
+             // Include createdAt for sorting
           },
         },
         receiver: {
@@ -38,6 +40,7 @@ export async function GET(request: NextRequest) {
             name: true,
             profilePic: true,
             title: true,
+            status: true
           },
         },
       },

@@ -1,5 +1,6 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { prisma } from './lib/schema';
 
 const httpServer = createServer();
 
@@ -41,6 +42,19 @@ io.on('connection', (socket) => {
     io.to(receiverId).emit('connect-noti-receive', { message, sender, receiverId });
   });
 
+  socket.on('user-status', async ({ userId, status }) => {
+    if (!userId) return;
+
+    console.log(`User is ${status}: ${userId}`);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { status },
+    });
+
+    // Broadcast to all other users (optional)
+    socket.broadcast.emit('user-status-change', { userId, status });
+  });
+
  
   socket.on('send-message', (data) => {
     const { roomId } = data;
@@ -50,9 +64,25 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('receive-message', data);
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
+  socket.on('set-user-id', (userId: string) => {
+  socket.data.userId = userId;
+});
+
+
+  // When the client disconnects (e.g. closing tab, browser crash, logout)
+socket.on('disconnect', async () => {
+  const userId = socket.data.userId;
+  if (userId) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { status: 'offline' },
+    });
+    socket.broadcast.emit('user-status-change', { userId, status: 'offline' });
+    console.log(`🔴 ${userId}, ${socket.id} disconnected`);
+  }
+});
+    
+  
 });
 
 httpServer.listen(4000, () => {

@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
         title: true,
         location: true,
         bannerPic: true,
+        status: true,
       },
     });
 

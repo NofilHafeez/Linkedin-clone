@@ -3,6 +3,12 @@
 import { redirect, useRouter } from 'next/navigation';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import axios from 'axios';
+export enum Status {
+  online = 'online',
+  offline = 'offline',
+  away = 'away',
+}
+
 
 type User = {
   id: string;
@@ -10,11 +16,12 @@ type User = {
   email: string;
   profilePic?: string;
   bio?: string;
+  status: Status;
 } | null;
 
 interface AuthContextType {
   user: User;
-  setUser: (user: User) => void;
+  setUser: React.Dispatch<React.SetStateAction<User>>;
   fetchUser: () => Promise<void>;
   loading: boolean;
 }
