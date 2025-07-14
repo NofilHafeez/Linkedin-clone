@@ -5,9 +5,17 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { useNotification } from '../../context/NotificationContext';
 import { useSocket } from '../../context/SocketContext';
+import toast from 'react-hot-toast';
+
+interface User {
+  id:string;
+  name:string;
+  title:string;
+  profilePic: string;
+} 
 
 export default function Header() { 
   const [activeTab, setActiveTab] = useState('home');
@@ -15,6 +23,9 @@ export default function Header() {
   const router = useRouter();
   const { count } = useNotification(); // ✅ Only call it once
   const socket = useSocket();
+  const [searchTab, setSearchTab] = useState(false);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     console.log('✅ Notification count in Header:', count);
@@ -37,29 +48,98 @@ if (socket && user?.id) {
   socket.disconnect(); // Force disconnect if desired
 }
 
-      router.push('/login');
+        window.location.href = '/login';
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get('/api/search/all-user', {
+        withCredentials: true
+      })
+      if (res.status === 200) {
+        setAllUsers(res.data.users);
+      }
+
+    } catch(error) {
+      console.log("err occured:", error);
+      toast.error('error fetching users');
+
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers();
+  }, [user?.id])
+
+  const filteredUsers = allUsers.filter(user => 
+  user.name.toLowerCase().includes(search.toLowerCase())
+);
+
   return (
-    <header className="bg-zinc-900 shadow-sm border-b sticky top-0 z-50">
+    <header onClick={() => setSearchTab(false)} className="bg-zinc-900 shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           {/* Logo and Search */}
           <div className="flex items-center space-x-4">
             <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold text-sm">
-              in
             </div>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-64 pl-10 bg-zinc-700 pr-4 py-2 rounded-md text-sm focus:outline-none"
-              />
+  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+  <input
+    value={search}
+    onChange={(e) => {
+      setSearchTab(true);
+      setSearch(e.target.value);
+    }}
+    onClick={(e) => {
+      e.stopPropagation(); // Prevent the header onClick from closing it
+      setSearchTab(true);
+    }}
+    type="text"
+    placeholder="Search"
+    className="w-64 pl-10 bg-zinc-700 pr-4 py-2 rounded-md text-sm focus:outline-none"
+  />
+  {searchTab && search && (
+    <div 
+      className="absolute top-12 left-0 w-74 bg-zinc-900 text-white shadow-md rounded-md p-2 z-50 max-h-96 overflow-y-auto"
+      onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+    >
+      {filteredUsers.length > 0 ? (
+        filteredUsers.map((user) => (
+          <div 
+            key={user.id} 
+            className='w-full flex items-center gap-3 p-2 hover:bg-zinc-800 rounded cursor-pointer'
+            onClick={() => {
+              router.push(`/profile/${user.id}`);
+              setSearchTab(false);
+              setSearch('');
+            }}
+          >
+            <img 
+              className='w-8 h-8 object-cover rounded-full' 
+              src={user?.profilePic || '/default.jpg'} 
+              alt="profile" 
+            />
+            <div>
+              <h1 className="font-medium text-sm">{user.name}</h1>
+              {user.title && (
+                <h3 className="text-xs text-gray-400">{user.title}</h3>
+              )}
             </div>
+          </div>
+        ))
+      ) : (
+        <div className="p-2 text-gray-400 text-sm">
+          No users found
+        </div>
+      )}
+    </div>
+  )}
+</div>
+            
           </div>
 
           {/* Navigation */}

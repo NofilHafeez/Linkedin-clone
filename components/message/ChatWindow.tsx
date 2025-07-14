@@ -117,7 +117,7 @@ const fetchMessages = async () => {
   }
 
   return (
-    <div className="bg-zinc-800 rounded-lg h-screen shadow-sm border border-zinc-700 h-[500px] flex flex-col">
+    <div className="bg-zinc-800 rounded-lg h-1/2 shadow-sm border border-zinc-700 h-[500px] flex flex-col">
       
       {/* Header */}
       <div className="p-4 border-b border-zinc-700 flex items-center justify-between">

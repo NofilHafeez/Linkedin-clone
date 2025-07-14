@@ -90,7 +90,7 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
   );
 
   return (
-    <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 h-full flex flex-col">
+    <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 h-[500px] flex flex-col">
       <div className="p-4 border-b border-zinc-700">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">Messaging</h2>
