@@ -133,7 +133,7 @@ if (socket && user?.id) {
         ))
       ) : (
         <div className="p-2 text-gray-400 text-sm">
-          No users found
+          None users found
         </div>
       )}
     </div>
