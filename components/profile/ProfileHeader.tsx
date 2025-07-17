@@ -10,14 +10,10 @@ interface User {
   name: string;
   title: string;
   location: string;
-  company: string;
-  connections: number;
-  profilePic: string;
-  bannerPic: string;
-  coverImage: string;
-  companyImage: string;
-  companyDuration: string;
+  profilePic?: string;
+  bannerPic?: string;
 }
+
 
 interface ProfileHeaderProps {
   user: User;
@@ -95,12 +91,15 @@ const handleTextEdit = async () => {
 };
 
 
+
+
+
   return (
     <div className="bg-zinc-900 rounded-lg overflow-hidden relative">
       {/* Cover Photo */}
       <div className="h-48 bg-zinc-700 relative">
         <img
-          src={user.bannerPic || 'https://via.placeholder.com/800x200'}
+          src={user.bannerPic || '/default.jpg'}
           alt="Cover"
           className="w-full h-full object-cover"
         />
@@ -115,78 +114,58 @@ const handleTextEdit = async () => {
       {/* Profile Info */}
       <div className="px-6 pb-6">
         {/* Profile Picture */}
-        <div className="relative -mt-20 mb-4">
-          <div className="w-40 h-40 rounded-full border-4 border-white bg-gray-300 overflow-hidden">
+        <div className="relative -mt-28 mb-4">
+          <div className="w-40 h-40 rounded-full border-1 border-white bg-gray-300 overflow-hidden">
             <img
               src={user.profilePic || '/default.jpg'}
               alt="Profile"
               className="w-full h-full object-cover"
             />
           </div>
-          <button
-            className="absolute bottom-2 right-2 p-2 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition-colors"
+            <button
+            className="absolute bottom-2 left-30 p-2 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition-colors"
             onClick={() => setShowProfileImageModal(true)}
           >
             <Camera className="w-4 h-4 text-gray-600" />
           </button>
-        </div>
-
-        {/* Name and Title */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-2">
-              <h1 className="text-3xl font-bold text-white">{editedName}</h1>
-              <button
-                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+        
+          <button
+                className="p-1 absolute bottom-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
                 onClick={() => setShowEditModal(true)}
               >
                 <Edit className="w-5 h-5" />
               </button>
-            </div>
-            <p className="text-xl text-gray-300 mb-2">{editedTitle}</p>
-            <div className="flex items-center space-x-4 text-gray-500 mb-3">
-              <div className="flex items-center text-sm space-x-1">
-                <MapPin className="w-5 h-5 mr-3" />
-                <span>{editedLocation}</span>
-              </div>
-              <div className="flex items-center text-sm space-x-1">
-                <Building className="w-4 h-4" />
-                <span>TechCorp</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <span className="text-blue-600 hover:underline cursor-pointer">{user.connections}</span>
-              <span>Contact info</span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 ml-4">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
-              Open to
-            </button>
-            <button className="px-4 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50 transition-colors">
-              Add profile section
-            </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition-colors">
-              More
-            </button>
-          </div>
         </div>
 
-        {/* Current Role Highlight */}
-        <div className="bg-zinc-700 rounded-lg p-4 mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-blue-600 rounded overflow-hidden flex-shrink-0">
-              <img
-                src={user.companyImage || 'https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'}
-                alt="Company"
-                className="w-full h-full object-cover"
-              />
+        {/* Name and Title */}
+        <div className="flex flex-col items-  start justify-between mb-4">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 ">
+              <h1 className="text-2xl font-bold text-white">{editedName}</h1>
+              
             </div>
-            <div>
-              <h3 className="font-semibold text-white">{user.company}</h3>
-              <p className="text-sm text-gray-300">{user.companyDuration}</p>
+            <p className="text-md text-gray-300 mb-2">{editedTitle}</p>
+            <div className="flex items-center space-x-2 text-gray-400 mb-3">
+              <div className="flex items-center text-sm space-x-1">
+                <span>{editedLocation}</span>
+              </div>
+              <div className="flex items-center font-bold text-blue-400 text-sm space-x-1">
+                <span>&#xB7;</span>
+                  <span>Contact info</span>
+              </div>
             </div>
+            <div className="flex items-center font-bold space-x-4 text-sm text-gray-700">
+              <span className="text-blue-400 hover:underline cursor-pointer">connections</span>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 mt-4">
+            <button className="px-6 py-1 font-medium bg-blue-400 text-black rounded-full hover:bg-blue-300 transition-colors">
+              Open to
+            </button>
+            <button className="px-6 py-1 border font-bold border-blue-400 text-blue-400 rounded-full hover:bg-blue-300 hover:bg-opacity-50 transition-colors">
+              Add profile section
+            </button>
           </div>
         </div>
 
@@ -194,20 +173,17 @@ const handleTextEdit = async () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setIsFollowing(!isFollowing)}
-            className={`px-6 py-2 rounded-full transition-colors ${
+            className={`px-6 py-1 rounded-full transition-colors ${
               isFollowing
                 ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-blue-400 text-black hover:bg-blue-300'
             }`}
           >
             {isFollowing ? 'Following' : 'Follow'}
           </button>
-          <button className="px-6 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50 transition-colors">
+          <button className="px-6 py-1 border border-blue-400 text-blue-400 rounded-full hover:bg-blue-50 transition-colors">
             <MessageCircle className="w-4 h-4 inline mr-2" />
             Message
-          </button>
-          <button className="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
-            <MoreHorizontal className="w-5 h-5 text-gray-600" />
           </button>
         </div>
       </div>

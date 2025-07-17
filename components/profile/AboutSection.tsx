@@ -7,10 +7,10 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 
-export default function AboutSection({ bio }: { bio?: string }) {
+export default function AboutSection({ userBio }: { UserBio?: string }) {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedBio, setEditedBio] = useState(bio || '');
+  const [editedBio, setEditedBio] = useState(userBio || '');
   const [loading, setLoading] = useState(false);
 
 const handleSave = async () => {
@@ -60,7 +60,7 @@ const handleSave = async () => {
           </button>
         </div>
         <p className="text-white text-sm leading-relaxed whitespace-pre-line">
-          {bio ? bio : 'No bio available.'}
+          {userBio ? userBio : 'No bio available.'}
         </p>
       </div>
 
@@ -72,7 +72,7 @@ const handleSave = async () => {
             <button
               onClick={() => {
                 setIsEditing(false);
-                setEditedBio(bio || '');
+                setEditedBio(userBio || '');
               }}
               className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
             >
@@ -93,7 +93,7 @@ const handleSave = async () => {
               <button
                 onClick={() => {
                   setIsEditing(false);
-                  setEditedBio(bio || '');
+                  setEditedBio(userBio || '');
                 }}
                 className="px-4 py-2 border border-zinc-600 text-white rounded hover:bg-zinc-800 transition"
               >

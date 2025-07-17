@@ -1,44 +1,57 @@
 "use client";
 
 import { Edit, Heart, MessageCircle, Share, X } from 'lucide-react';
-import { useState,useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import toast from 'react-hot-toast';
-import axios from 'axios';
+import { useState } from 'react';
 
-interface Post {
-  id: string | number;
-  createdAt: string | number | Date;
-  text?: string;
-  imageUrl?: string;
-  likes?: any[];
-  comments?: any[];
+export interface UserBasic {
+  id: string;
+  name: string;
+  profilePic: string | null;
 }
 
-export default function ActivitySection() {
+export interface Like {
+  id: string;
+  userId: string;
+  postId: string;
+  createdAt: string;
+  user: UserBasic;
+}
+
+export interface Comment {
+  id: string;
+  text: string;
+  commenterId: string;
+  postId: string;
+  createdAt: string;
+  commenter: UserBasic;
+  likes: Like[];
+}
+
+export interface Post {
+  id: string;
+  text: string;
+  imageUrl: string;
+  createdAt: string;
+  userId: string;
+  user: UserWithTitle;
+  likes: Like[];
+  comments: Comment[];
+}
+
+export interface UserWithTitle extends UserBasic {
+  title: string;
+}
+
+interface ActivityHeaderProps {
+  userPosts: Post[];
+}
+
+export default function ActivitySection({ userPosts }: ActivityHeaderProps) {
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [expandedPost, setExpandedPost] = useState<Post | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-    const { user } = useAuth();
-  
-    const fetchPosts = async () => {
-      if (!user?.id) return;
-      try {
-        const response = await axios.get(`/api/posts/userId?userId=${user.id}`);
-        if (response.status === 200 && Array.isArray(response.data)) {
-          setPosts(response.data);
-        } else {
-          toast.error('Unexpected response format:');
-        }
-      } catch (error) {
-        toast.error("Error fetching posts")
-        console.error('Error fetching posts:', error);
-      }
-    };
-  
-    useEffect(() => {
-      fetchPosts();
-    }, [user?.id]);
+  const [showAllOverlay, setShowAllOverlay] = useState(false); // <-- NEW
+
+  const visiblePosts = userPosts.slice(0, 3); // <-- Limit to 3 initially
 
   return (
     <>
@@ -46,7 +59,7 @@ export default function ActivitySection() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-semibold text-white">Activity</h2>
-            <p className="text-sm text-gray-600">{posts.length} posts</p>
+            <p className="text-sm text-gray-600">{userPosts.length} posts</p>
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -62,53 +75,40 @@ export default function ActivitySection() {
         </div>
 
         <div className="space-y-6">
-          {posts.map((post, index) => (
+          {visiblePosts.map((post, index) => (
             <div
               key={post.id}
-              className={`cursor-pointer ${index !== posts.length - 1 ? 'border-b pb-6' : ''}`}
+              className={`${index !== visiblePosts.length - 1 ? 'border-b-[0.2px] border-gray-400 pb-3' : ''}`}
               onClick={() => setExpandedPost(post)}
             >
               <div className="flex space-x-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                  <img
-                    src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop"
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
                 <div className="flex-1">
-                  <div className="mb-2">
-                    <span className="font-semibold text-white">You</span>
-                    <span className="text-gray-600 text-sm ml-2">
+                  <div className="mb-1">
+                    <span className="font-semibold text-xs text-gray-400">{post.user.name} repostited this</span>
+                    <span className="text-gray-600 text-xs ml-1">
                       • {new Date(post.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-
-                  {post.text && (
-                    <p className="text-white text-sm leading-relaxed line-clamp-2 mb-3">{post.text}</p>
-                  )}
-
-                  {post.imageUrl && (
-                    <img
-                      src={post.imageUrl}
-                      alt="Post"
-                      className="w-full h-40 object-cover rounded mb-3"
-                    />
-                  )}
-
-                  <div className="flex items-center space-x-6 text-sm text-white">
-                    <div className="flex items-center space-x-1">
-                      <Heart className="w-4 h-4" />
-                      <span>{post.likes?.length || 0}</span>
+                  <div className='flex gap-3 mb-4'>
+                    <div className='h-17 w-17 rounded-lg'>
+                      {post.imageUrl && (
+                        <img
+                          src={post.imageUrl}
+                          alt="Post"
+                          className="w-full h-full object-cover rounded-lg mb-3"
+                        />
+                      )}
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <MessageCircle className="w-4 h-4" />
-                      <span>{post.comments?.length || 0}</span>
+                    {post.text && (
+                      <p className="text-white text-sm leading-relaxed line-clamp-2 mb-3">{post.text}</p>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center mt-2 w-full text-sm text-white">
+                    <div className="flex text-gray-400 items-center space-x-1">
+                      <span>{post.likes?.length || 0} Likes</span>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <Share className="w-4 h-4" />
-                      <span>0</span>
+                    <div className="flex items-center text-gray-400 space-x-1">
+                      <span>{post.comments?.length || 0} comments</span>
                     </div>
                   </div>
                 </div>
@@ -116,103 +116,79 @@ export default function ActivitySection() {
             </div>
           ))}
 
-          {posts.length === 0 && (
+          {visiblePosts.length === 0 && (
             <p className="text-gray-500 text-center mt-6">No activity yet.</p>
           )}
         </div>
 
         <div className="mt-6 pt-6 border-t text-center">
-          <button className="text-blue-600 hover:underline font-medium">
-            Show all activity
+          <button
+            onClick={() => setShowAllOverlay(true)}
+            className="text-gray-400 cursor-pointer hover:underline font-medium"
+          >
+            Show all posts -
           </button>
         </div>
       </div>
 
-      {/* Create Post Modal */}
-      {isCreatingPost && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-zinc-900 w-full max-w-lg mx-4 p-6 rounded-lg relative">
-            <button
-              onClick={() => setIsCreatingPost(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-lg font-semibold text-white mb-4">Create a Post</h3>
-            <textarea
-              rows={5}
-              className="w-full p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-400 focus:outline-none"
-              placeholder="What's on your mind?"
-            />
-            <div className="flex justify-end mt-4 space-x-2">
-              <button
-                onClick={() => setIsCreatingPost(false)}
-                className="px-4 py-2 text-white border border-gray-600 rounded hover:bg-zinc-800"
-              >
-                Cancel
-              </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Post
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+   {showAllOverlay && (
+  <div className="fixed h-screen inset-0 z-50 flex items-start justify-center bg-black/70 backdrop-blur-sm overflow-y-auto px-4 py-10">
+    <div className="bg-zinc-900 w-full max-w-3xl p-6 rounded-xl relative mt-10 mb-10">
+      <button
+        onClick={() => setShowAllOverlay(false)}
+        className="absolute top-4 right-4 text-gray-400 hover:text-white"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <h2 className="text-xl font-semibold text-white mb-6">All Activity</h2>
 
-      {/* Expanded Post View */}
-      {expandedPost && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-zinc-900 w-full max-w-3xl mx-4 p-6 rounded-xl relative overflow-y-auto max-h-[90vh]">
-            <button
-              onClick={() => setExpandedPost(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="flex space-x-3 mb-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden">
-                <img
-                  src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg"
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+      <div className="space-y-8">
+        {userPosts.map((post) => (
+          <div
+            key={post.id}
+            className="border-b border-zinc-700 pb-6 cursor-pointer"
+            onClick={() => setExpandedPost(post)}
+          >
+            {/* Header */}
+            <div className="flex items-start gap-3 mb-3">
+              <img
+                src={post.user.profilePic || '/default-avatar.png'}
+                alt="User Avatar"
+                className="w-10 h-10 rounded-full object-cover"
+              />
               <div>
-                <h4 className="text-white font-semibold">You</h4>
-                <p className="text-sm text-gray-500">
-                  {new Date(expandedPost.createdAt).toLocaleString()}
-                </p>
+                <div className="text-sm font-semibold text-white">{post.user.name}</div>
+                <div className="text-xs text-gray-500">
+                  {new Date(post.createdAt).toLocaleDateString()}
+                </div>
               </div>
             </div>
-            {expandedPost.text && (
-              <p className="text-white text-sm leading-relaxed mb-4">
-                {expandedPost.text}
-              </p>
-            )}
-            {expandedPost.imageUrl && (
+
+            {/* Text */}
+            {post.text && <p className="text-white text-sm mb-3">{post.text}</p>}
+
+            {/* Image */}
+            {post.imageUrl && (
               <img
-                src={expandedPost.imageUrl}
+                src={post.imageUrl}
                 alt="Post"
-                className="w-full max-h-[500px] object-cover rounded mb-4"
+                className="w-full max-h-[400px] object-cover rounded mb-3"
               />
             )}
-            <div className="flex space-x-6 text-white text-sm mt-2">
-              <div className="flex items-center space-x-1">
-                <Heart className="w-4 h-4" />
-                <span>{expandedPost.likes?.length || 0}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <MessageCircle className="w-4 h-4" />
-                <span>{expandedPost.comments?.length || 0}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Share className="w-4 h-4" />
-                <span>0</span>
-              </div>
+
+            {/* Meta Info */}
+            <div className="text-gray-400 text-sm">
+              {post.likes?.length || 0} likes • {post.comments?.length || 0} comments
             </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
+
+
     </>
   );
 }

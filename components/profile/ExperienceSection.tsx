@@ -7,7 +7,6 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 interface Experience {
-  id: string;
   title: string;
   company: string;
   location: string;
@@ -18,9 +17,13 @@ interface Experience {
   description: string[];
 }
 
-export default function ExperienceSection({ experience = [] }: { experience?: Experience[] }) {
+interface ExpProp {
+  userExperience: Experience[];
+}
+
+export default function ExperienceSection({ userExperience }: ExpProp ) {
   const { user } = useAuth();
-  const [experienceList, setExperienceList] = useState<Experience[]>(experience);
+  const [experienceList, setExperienceList] = useState<Experience[]>(userExperience);
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -62,7 +65,7 @@ export default function ExperienceSection({ experience = [] }: { experience?: Ex
 
       if (res.status === 200) {
         const newExp: Experience = {
-          id: Date.now().toString(),
+
           title,
           company,
           location,
@@ -118,7 +121,7 @@ export default function ExperienceSection({ experience = [] }: { experience?: Ex
 
         <div className="space-y-6">
           {experienceList.map((exp, index) => (
-            <div key={exp.id} className={`${index !== experienceList.length - 1 ? 'border-b pb-6' : ''}`}>
+            <div key={index} className={`${index !== experienceList.length - 1 ? 'border-b pb-6' : ''}`}>
               <div className="flex space-x-4">
                 <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
                   <img

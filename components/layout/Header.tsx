@@ -108,25 +108,25 @@ if (socket && user?.id) {
       onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
     >
       {filteredUsers.length > 0 ? (
-        filteredUsers.map((user) => (
+        filteredUsers.map((searchUser) => (
           <div 
-            key={user.id} 
+            key={searchUser.id} 
             className='w-full flex items-center gap-3 p-2 hover:bg-zinc-800 rounded cursor-pointer'
             onClick={() => {
-              router.push(`/profile/${user.id}`);
+              router.push(`/profile/${searchUser.id}`);
               setSearchTab(false);
               setSearch('');
             }}
           >
             <img 
               className='w-8 h-8 object-cover rounded-full' 
-              src={user?.profilePic || '/default.jpg'} 
+              src={searchUser?.profilePic || '/default.jpg'} 
               alt="profile" 
             />
             <div>
-              <h1 className="font-medium text-sm">{user.name}</h1>
-              {user.title && (
-                <h3 className="text-xs text-gray-400">{user.title}</h3>
+              <h1 className="font-medium text-sm">{searchUser.name}</h1>
+              {searchUser.title && (
+                <h3 className="text-xs text-gray-400">{searchUser.title}</h3>
               )}
             </div>
           </div>

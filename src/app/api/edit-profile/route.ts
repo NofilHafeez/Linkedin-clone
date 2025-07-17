@@ -16,10 +16,16 @@ export async function POST(request: Request) {
 
     const userId = formData.get('userId') as string;
     const name = formData.get('name') as string;
-    const type = formData.get('type') as string; 
+    const type = formData.get('type') as string;
     const title = formData.get('title') as string;
     const location = formData.get('location') as string;
     const bio = formData.get('bio') as string;
+    const experience = formData.get('experience') as string;
+    const educationRaw = formData.get('education') as string;
+    const skillsRaw = formData.get('skills') as string; // New: handle skills
+    const skill = formData.get('skill') as string;       // New: individual skill (for add)
+ 
+
     const image = formData.get('image') as File;
 
     if (!userId) {
@@ -47,12 +53,52 @@ export async function POST(request: Request) {
       imageUrl = (uploaded as any).secure_url;
     }
 
+    // Load current user to get existing skills
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { skills: true },
+    });
+
     const updateData: any = {};
     if (name) updateData.name = name;
     if (title) updateData.title = title;
     if (location) updateData.location = location;
     if (bio) updateData.bio = bio;
-      if (imageUrl) {
+
+
+let skills: string[] | undefined;
+if (skillsRaw) {
+  try {
+    skills = JSON.parse(skillsRaw);
+    if (!Array.isArray(skills) || !skills.every(s => typeof s === 'string')) {
+      throw new Error('Invalid skills format');
+    }
+  } catch (err) {
+    return NextResponse.json({ error: 'Invalid skills format. Must be a JSON array of strings.' }, { status: 400 });
+  }
+}
+if (skills) updateData.skills = skills;
+
+
+    if (experience) {
+      try {
+        updateData.experience = JSON.parse(experience);
+      } catch {
+        return NextResponse.json({ error: 'Invalid experience format' }, { status: 400 });
+      }
+    }
+
+    if (educationRaw) {
+      try {
+        updateData.education = JSON.parse(educationRaw);
+      } catch {
+        return NextResponse.json({ error: 'Invalid education format' }, { status: 400 });
+      }
+    }
+
+    
+
+    if (imageUrl) {
       if (type === 'profile') updateData.profilePic = imageUrl;
       if (type === 'banner') updateData.bannerPic = imageUrl;
     }
@@ -62,7 +108,7 @@ export async function POST(request: Request) {
       data: updateData,
     });
 
-    return NextResponse.json({ message: 'Profile updated successfully',imageUrl }, { status: 200 });
+    return NextResponse.json({ message: 'Profile updated successfully', imageUrl }, { status: 200 });
   } catch (error) {
     console.error('Error updating profile:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -3,30 +3,41 @@ import {prisma} from '../../../..//lib/schema';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get('query');
+  const userId = searchParams.get('userId');
+  console.log(userId)
 
-  if (!query) {
-    return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
+  if (!userId) {
+    return NextResponse.json({ error: 'userId is required' }, { status: 400 });
   }
 
   try {
-    const users = await prisma.user.findMany({
-      where: {
-        name: { contains: query, mode: 'insensitive' }
-      },
-      select: { id: true, name: true, profilePic: true }
-    });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profilePic: true,
+        bio: true,
+        title: true,
+        location: true,
+        bannerPic: true,
+        status: true,
+        experience:true,
+        education:true,
+        skills: true,
 
-    const posts = await prisma.post.findMany({
-      where: {
-        text: { contains: query, mode: 'insensitive' }
       },
-      include: {
-        user: { select: { id: true, name: true, profilePic: true } }
-      }
     });
+  
 
-    return NextResponse.json({ users, posts }, { status: 200 });
+    if (!user) {
+      return NextResponse.json({ user: null }, { status: 404 });
+    }
+  console.log(user)
+
+
+    return NextResponse.json({ user }, {status: 200});
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
   compiler: {
-    removeConsole: true,
+    removeConsole: false,
   },
   // Disable Next.js font optimization to avoid build-time fetch
   optimizeFonts: false,

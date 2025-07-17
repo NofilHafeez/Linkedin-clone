@@ -6,20 +6,23 @@ import { useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-interface EducationEntry {
-  id: string;
-  school: string;
-  degree: string;
-  field: string;
-  duration: string;
-  description: string;
-  activities: string[];
-  logo: string;
+  interface EducationEntry {
+    school: string;
+    degree: string;
+    field: string;
+    duration: string;
+    description: string;
+    activities: string[];
+    logo: string;
+  }
+
+  interface EduProp {
+  userEducation: EducationEntry[];
 }
 
-export default function EducationSection({ education = [] }: { education?: EducationEntry[] }) {
+export default function EducationSection({ userEducation }: EduProp) {
   const { user } = useAuth();
-  const [educationList, setEducationList] = useState<EducationEntry[]>(education);
+  const [educationList, setEducationList] = useState<EducationEntry[]>(userEducation);
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -61,7 +64,6 @@ export default function EducationSection({ education = [] }: { education?: Educa
 
     if (res.status === 200) {
       const newEducation: EducationEntry = {
-        id: Date.now().toString(),
         school,
         degree,
         field,
@@ -115,7 +117,7 @@ export default function EducationSection({ education = [] }: { education?: Educa
 
         <div className="space-y-6">
           {educationList.map((edu, index) => (
-            <div key={edu.id} className={`${index !== educationList.length - 1 ? 'border-b pb-6' : ''}`}>
+            <div key={index} className={`${index !== educationList.length - 1 ? 'border-b pb-6' : ''}`}>
               <div className="flex space-x-4">
                 <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
                   <img
@@ -135,21 +137,22 @@ export default function EducationSection({ education = [] }: { education?: Educa
                   {edu.description && (
                     <p className="mt-2 text-gray-400 text-sm">{edu.description}</p>
                   )}
-                  {edu.activities.length > 0 && (
-                    <div className="mt-2">
-                      <h4 className="text-sm font-medium text-gray-400 mb-1">Activities and societies:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {edu.activities.map((activity, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-gray-800 text-gray-300 text-xs rounded-full"
-                          >
-                            {activity}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {Array.isArray(edu.activities) && edu.activities.length > 0 && (
+  <div className="mt-2">
+    <h4 className="text-sm font-medium text-gray-400 mb-1">Activities and societies:</h4>
+    <div className="flex flex-wrap gap-2">
+      {edu.activities.map((activity, idx) => (
+        <span
+          key={idx}
+          className="px-3 py-1 bg-gray-800 text-gray-300 text-xs rounded-full"
+        >
+          {activity}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
                 </div>
               </div>
             </div>

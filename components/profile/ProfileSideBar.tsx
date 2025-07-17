@@ -1,19 +1,71 @@
 'use client';
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { Plus, X } from 'lucide-react';
 
-import { ExternalLink, Users, Eye, TrendingUp } from 'lucide-react';
+
+interface Person {
+  id: string;
+  name: string;
+  title: string;
+  profilePic: string;
+}
+
 
 export default function ProfileSidebar() {
-  const profileLanguages = [
-    { language: 'English', level: 'Native or bilingual proficiency' },
-    { language: 'Spanish', level: 'Professional working proficiency' },
-    { language: 'Mandarin', level: 'Elementary proficiency' }
-  ];
+  
+    const [people, setPeople] = useState<Person[]>([]);
+    const { user } = useAuth();
+  
+    useEffect(() => {
+      if (!user?.id) return;
+  
+      const fetchPeople = async () => {
+        try {
+          const response = await axios.get(`/api/connections/?userId=${user.id}`, {
+            withCredentials: true,
+          });
+  
+          if (response.data) {
+            console.log('Fetched people you may know:', response.data);
+            setPeople(response.data.similarUsers || []);
+          } else {
+            console.error('No data received from API');
+          }
+        } catch (error) {
+          console.error('Error fetching people you may know:', error);
+        }
+      };
+  
+      fetchPeople();
+    }, [user?.id]);
+  
+    const sendConnectionRequest = async (receiverId: string) => {
+      if (!user?.id) {
+        console.error('User ID is missing.');
+        return;
+      }
+  
+      try {
+        const response = await axios.post(
+          '/api/connections/request',
+          {
+            requesterId: user.id,
+            receiverId: receiverId,
+          },
+          { withCredentials: true }
+        );
+  
+        if (response.status === 200) {
+          setPeople((prev) => prev.filter((person) => person.id !== receiverId));
+          console.log('Connection request sent successfully');
+        }
+      } catch (error) {
+        console.error('Error sending connection request:', error);
+      }
+    };
 
-  const publicProfileBadges = [
-    'Top Product Management Voice',
-    'LinkedIn Learning Instructor',
-    'Open to Work'
-  ];
 
   return (
     <div className="space-y-6">
@@ -35,86 +87,57 @@ export default function ProfileSidebar() {
         </div>
       </div>
 
-      {/* Languages */}
-      <div className="bg-zinc-900 rounded-lg p-4">
-        <h3 className="font-semibold text-white mb-4">Languages</h3>
-        <div className="space-y-3">
-          {profileLanguages.map((lang, index) => (
-            <div key={index}>
-              <h4 className="font-medium text-white">{lang.language}</h4>
-              <p className="text-sm text-gray-500">{lang.level}</p>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* People Also Viewed */}
-      <div className="bg-zinc-900 rounded-lg  p-4">
-        <h3 className="font-semibold text--white mb-4">People also viewed</h3>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                <img
-                  src={`https://images.pexels.com/photos/${1181686 + i}/pexels-photo-${1181686 + i}.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-white text-sm hover:text-blue-500 cursor-pointer">
-                  {i === 1 ? 'Emily Watson' : i === 2 ? 'James Miller' : 'Lisa Chen'}
-                </h4>
-                <p className="text-xs text-gray-500 truncate">
-                  {i === 1 ? 'Product Manager at Microsoft' : i === 2 ? 'Senior Developer at Apple' : 'Design Lead at Figma'}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+       {/* People You May Know */}
+      <div className="bg-zinc-900 rounded-lg shadow-sm p-6">
+  <div className="flex items-center justify-between mb-6">
+    <h2 className="text-lg font-semibold text-white">People you may know</h2>
+  </div>
 
-      {/* People You May Know */}
-      <div className="bg-zinc-900 rounded-lg p-4">
-        <h3 className="font-semibold text-white mb-4">People you may know</h3>
-        <div className="space-y-4">
-          {[1, 2].map((i) => (
-            <div key={i} className="text-center">
-              <div className="w-16 h-16 rounded-full overflow-hidden mx-auto mb-2">
-                <img
-                  src={`https://images.pexels.com/photos/${1222271 + i}/pexels-photo-${1222271 + i}.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h4 className="font-medium text-white text-sm hover:text-blue-600 cursor-pointer">
-                {i === 1 ? 'David Kim' : 'Maria Rodriguez'}
-              </h4>
-              <p className="text-xs text-gray-500 mb-2">
-                {i === 1 ? 'UX Designer at Design Studio' : 'Marketing Director at StartupXYZ'}
-              </p>
-              <button className="px-4 py-1 border border-blue-600 text-blue-600 rounded-full text-xs hover:bg-blue-50 transition-colors">
-                Connect
-              </button>
+  {people.length === 0 ? (
+    <p className="text-gray-400 text-center">No people to suggest right now.</p>
+  ) : (
+    <div className="flex flex-col gap-4">
+      {people.map((person) => (
+        <div
+          key={person.id}
+          className="rounded-lg p-4 hover:bg-zinc-700 transition-colors border border-zinc-700"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-16 h-16 rounded-full overflow-hidden">
+              <img
+                src={person.profilePic || '/default.jpg'}
+                alt={`${person.name}'s profile`}
+                className="w-full h-full object-cover"
+              />
             </div>
-          ))}
-        </div>
-      </div>
+            <button
+              className="text-gray-400 hover:text-gray-200"
+              aria-label="Dismiss suggestion"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
-      {/* Profile Badges */}
-      <div className="bg-zinc-900 rounded-lg p-4">
-        <h3 className="font-semibold text-white mb-4">Profile badges</h3>
-        <div className="space-y-2">
-          {publicProfileBadges.map((badge, index) => (
-            <div key={index} className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg">
-              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-blue-800 font-medium">{badge}</span>
-            </div>
-          ))}
+          <div className="mb-4">
+            <h3 className="font-semibold text-white hover:text-blue-400 cursor-pointer text-sm">
+              {person.name}
+            </h3>
+            <p className="text-gray-400 text-xs mt-1">{person.title || 'No title available'}</p>
+          </div>
+
+          <button
+            onClick={() => sendConnectionRequest(person.id)}
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-blue-600 text-blue-400 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Connect</span>
+          </button>
         </div>
-      </div>
+      ))}
+    </div>
+  )}
+</div>
     </div>
   );
 }
