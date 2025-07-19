@@ -133,14 +133,14 @@ export default function ActivitySection({ userPosts }: ActivityHeaderProps) {
 
    {showAllOverlay && (
   <div className="fixed h-screen inset-0 z-50 flex items-start justify-center bg-black/70 backdrop-blur-sm overflow-y-auto px-4 py-10">
-    <div className="bg-zinc-900 w-full max-w-3xl p-6 rounded-xl relative mt-10 mb-10">
+    <div className="bg-zinc-900 w-full max-w-3xl  rounded-xl relative mt-10 mb-10">
       <button
         onClick={() => setShowAllOverlay(false)}
         className="absolute top-4 right-4 text-gray-400 hover:text-white"
       >
         <X className="w-5 h-5" />
       </button>
-      <h2 className="text-xl font-semibold text-white mb-6">All Activity</h2>
+      <h2 className="text-xl px-6 pt-6 font-semibold text-white mb-6">All Activity</h2>
 
       <div className="space-y-8">
         {userPosts.map((post) => (
@@ -150,7 +150,7 @@ export default function ActivitySection({ userPosts }: ActivityHeaderProps) {
             onClick={() => setExpandedPost(post)}
           >
             {/* Header */}
-            <div className="flex items-start gap-3 mb-3">
+            <div className="flex px-6 items-start gap-3 mb-3">
               <img
                 src={post.user.profilePic || '/default-avatar.png'}
                 alt="User Avatar"
@@ -165,7 +165,7 @@ export default function ActivitySection({ userPosts }: ActivityHeaderProps) {
             </div>
 
             {/* Text */}
-            {post.text && <p className="text-white text-sm mb-3">{post.text}</p>}
+            {post.text && <p className="text-white px-6 text-sm mb-3">{post.text}</p>}
 
             {/* Image */}
             {post.imageUrl && (
@@ -177,7 +177,7 @@ export default function ActivitySection({ userPosts }: ActivityHeaderProps) {
             )}
 
             {/* Meta Info */}
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-400 px-6 text-sm">
               {post.likes?.length || 0} likes • {post.comments?.length || 0} comments
             </div>
           </div>

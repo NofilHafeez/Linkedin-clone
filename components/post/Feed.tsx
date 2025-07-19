@@ -4,6 +4,7 @@ import PostCreator from './CreatePost';
 import Post from './PostCard';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import PostSkeleton from '../skeleton/PostSkeleton';
 import axios from 'axios';
 
 export interface UserBasic {
@@ -48,6 +49,8 @@ export interface UserWithTitle extends UserBasic {
 
 export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const { user } = useAuth();
 
   const fetchPosts = async () => {
@@ -61,12 +64,28 @@ export default function Feed() {
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchPosts();
   }, [user?.id]);
+
+  if (loading) {
+    return (
+      <div className='flex flex-col gap-4'>
+        <div className='flex gap-3 p-4 rounded-md animate-pulse bg-zinc-900'>
+          <div className='h-12 w-14 rounded-full bg-zinc-700'></div>
+          <div className='h-13 rounded-md w-full bg-zinc-700'></div>
+        </div>
+        <PostSkeleton/>
+        <PostSkeleton/>
+        <PostSkeleton/>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

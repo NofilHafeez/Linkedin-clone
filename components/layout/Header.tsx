@@ -84,7 +84,8 @@ if (socket && user?.id) {
         <div className="flex items-center justify-between h-14">
           {/* Logo and Search */}
           <div className="flex items-center space-x-4">
-            <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold text-sm">
+            <div className="w-8 h-8 bg-gray-400 rounded text-white flex items-center justify-center font-bold text-sm">
+              <h1 className='text-zinc-900 text-lg font-bold'>Fi</h1>
             </div>
             <div className="relative">
   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -100,7 +101,7 @@ if (socket && user?.id) {
     }}
     type="text"
     placeholder="Search"
-    className="w-64 pl-10 bg-zinc-700 pr-4 py-2 rounded-md text-sm focus:outline-none"
+    className="w-64 pl-10 border-[0.1px] pr-4 py-2 rounded-full text-sm focus:outline-none"
   />
   {searchTab && search && (
     <div 

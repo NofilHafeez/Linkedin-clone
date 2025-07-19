@@ -8,11 +8,13 @@ import EducationSection from '@/../components/profile/EducationSection';
 import SkillsSection from '@/../components/profile/SkillsSection';
 import ActivitySection from '@/../components/profile/ActivitySection';
 import ProfileSidebar from '@/../components/profile/ProfileSideBar';
-import { useAuth } from '../../../../../context/AuthContext';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
+import PostSkeleton from '../../../../../components/skeleton/PostSkeleton';
+import SidebarSkeleton from '../../../../../components/skeleton/SidebarSkeleton';
+import ProfileHeaderSkeleton from '../../../../../components/skeleton/ProfileHeaderSkeleton';
 
 export enum Status {
   online = 'online',
@@ -69,6 +71,7 @@ export default function ProfilePage() {
   const params = useParams();          // { userId: '12345' }
   const userId = params.userId; 
   const [searchUser, setSearchUser] = useState<User>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -82,6 +85,8 @@ export default function ProfilePage() {
           } 
         } catch (error) {
           console.error('Error fetching posts:', error);
+        } finally {
+          setLoading(false);
         }
       }
     };
@@ -95,6 +100,8 @@ export default function ProfilePage() {
       } catch(error) {
         console.log('Error occured', error)
           toast.error('error')
+      } finally {
+        setLoading(false);
 
       }
     }
@@ -103,19 +110,43 @@ export default function ProfilePage() {
     fetchPosts();
   }, [userId]);
 
-
+  if (loading) {
   return (
     <div className="min-h-screen bg-zinc-black">
       <Header />
-      
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column - Loader Posts */}
+          <div className="lg:col-span-8 space-y-6">
+            <ProfileHeaderSkeleton />
+            <PostSkeleton />
+            <PostSkeleton />
+          </div>
+
+          {/* Right Column - Sidebar Skeleton */}
+          <div className="lg:col-span-4 space-y-6">
+            <SidebarSkeleton />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+ return (
+    <div className="min-h-screen bg-zinc-black">
+      <Header />
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main Profile Content */}
           <div className="lg:col-span-8">
             <div className="space-y-6">
-              {searchUser && ( <>
+              {searchUser && (
+                <>
                   <ProfileHeader
-                    user={{
+                    searchUser={{
                       id: searchUser.id,
                       name: searchUser.name,
                       title: searchUser.title || '',
@@ -124,30 +155,36 @@ export default function ProfilePage() {
                       bannerPic: searchUser.bannerPic || '',
                     }}
                   />
-              <AboutSection userBio={searchUser?.bio} />
-                  </>
-                )}
+                  <AboutSection userBio={searchUser?.bio} />
+                </>
+              )}
 
               {Array.isArray(posts) && posts.length > 0 && (
-  <ActivitySection userPosts={posts} />
-)}
-            {searchUser && ( <>
-             <ExperienceSection userExperience={searchUser?.experience ? [searchUser.experience] : []} />
-              <EducationSection userEducation={searchUser?.education ? [searchUser.education] : []}/>
-              <SkillsSection userSkills={searchUser?.skills || []} />
+                <ActivitySection userPosts={posts} />
+              )}
 
-</>
-            )}  
-
+              {searchUser && (
+                <>
+                  <ExperienceSection
+                    userExperience={Array.isArray(searchUser.experience) ? searchUser.experience : []}
+                  />
+                  <EducationSection
+                    userEducation={Array.isArray(searchUser.education) ? searchUser.education : []}
+                  />
+                  <SkillsSection
+                    userSkills={Array.isArray(searchUser.skills) ? searchUser.skills : []}
+                  />
+                </>
+              )}
             </div>
           </div>
-          
-          {/* Profile Sidebar */}
+
+          {/* Sidebar */}
           <div className="lg:col-span-4">
             <ProfileSidebar />
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

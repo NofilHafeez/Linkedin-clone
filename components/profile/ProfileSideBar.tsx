@@ -3,6 +3,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Plus, X } from 'lucide-react';
+import SidebarSkeleton from "../skeleton/SidebarSkeleton";
 
 
 interface Person {
@@ -17,6 +18,7 @@ export default function ProfileSidebar() {
   
     const [people, setPeople] = useState<Person[]>([]);
     const { user } = useAuth();
+    const [loading, setLoading] = useState(true);
   
     useEffect(() => {
       if (!user?.id) return;
@@ -35,6 +37,8 @@ export default function ProfileSidebar() {
           }
         } catch (error) {
           console.error('Error fetching people you may know:', error);
+        } finally {
+          setLoading(false);
         }
       };
   
@@ -65,6 +69,15 @@ export default function ProfileSidebar() {
         console.error('Error sending connection request:', error);
       }
     };
+
+    if (loading) {
+      return (
+        <div>
+          <SidebarSkeleton/>
+        </div>
+
+      )
+    }
 
 
   return (

@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
         location: true,
         bannerPic: true,
         status: true,
+        viewedProfile: true,
       },
     });
 

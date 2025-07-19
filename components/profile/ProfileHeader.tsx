@@ -4,6 +4,7 @@ import { Camera, Edit, Plus, MessageCircle, MoreHorizontal, MapPin, Building, X 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 interface User {
   id: string;
@@ -16,19 +17,45 @@ interface User {
 
 
 interface ProfileHeaderProps {
-  user: User;
+  searchUser: User;
 }
 
-export default function ProfileHeader({ user }: ProfileHeaderProps) {
+export default function ProfileHeader({ searchUser }: ProfileHeaderProps) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showProfileImageModal, setShowProfileImageModal] = useState(false);
   const [showBannerImageModal, setShowBannerImageModal] = useState(false);
-  const [editedName, setEditedName] = useState(user.name);
-  const [editedTitle, setEditedTitle] = useState(user.title);
-  const [editedLocation, setEditedLocation] = useState(user.location);
+  const [editedName, setEditedName] = useState(searchUser.name);
+  const [editedTitle, setEditedTitle] = useState(searchUser.title);
+  const [editedLocation, setEditedLocation] = useState(searchUser.location);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const {user} = useAuth();
+
+  let userId  = user?.id;
   
+useEffect(() => {
+  const timeout = setTimeout(() => {
+    if (user.id === searchUser.id) return;
+
+    const profileView = async () => {
+      try {
+        await axios.post(
+          "/api/viewProfile",
+          { searchUserId: searchUser.id, viewedProfile: 1 },
+          { withCredentials: true }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    profileView();
+  }, 3000);
+
+  // ✅ Cleanup on unmount or re-run
+  return () => clearTimeout(timeout);
+}, [user.id, searchUser.id]);
+
 
 const handleImageUpload = async (file: File, type: 'profile' | 'banner') => {
   if (!user?.id) {
@@ -99,7 +126,7 @@ const handleTextEdit = async () => {
       {/* Cover Photo */}
       <div className="h-48 bg-zinc-700 relative">
         <img
-          src={user.bannerPic || '/default.jpg'}
+          src={searchUser.bannerPic || '/default.jpg'}
           alt="Cover"
           className="w-full h-full object-cover"
         />
@@ -117,7 +144,7 @@ const handleTextEdit = async () => {
         <div className="relative -mt-28 mb-4">
           <div className="w-40 h-40 rounded-full border-1 border-white bg-gray-300 overflow-hidden">
             <img
-              src={user.profilePic || '/default.jpg'}
+              src={searchUser.profilePic || '/default.jpg'}
               alt="Profile"
               className="w-full h-full object-cover"
             />
