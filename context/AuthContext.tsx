@@ -17,6 +17,10 @@ type User = {
   profilePic?: string;
   bio?: string;
   status: Status;
+  viewedProfile: number;
+  title: String;
+  bannerPic: string;
+  location: string;
 } | null;
 
 interface AuthContextType {

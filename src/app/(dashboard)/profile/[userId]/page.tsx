@@ -62,6 +62,7 @@ type User = {
   education?: EducationEntry | null;
   experience?: Experience | null;
   skills?: Skill | null;
+  viewedProfile: number;
 } | null;
 
 
@@ -181,7 +182,7 @@ export default function ProfilePage() {
 
           {/* Sidebar */}
           <div className="lg:col-span-4">
-            <ProfileSidebar />
+            <ProfileSidebar viewedProfile={searchUser?.viewedProfile} searchUserId={searchUser?.id}/>
           </div>
         </div>
       </div>

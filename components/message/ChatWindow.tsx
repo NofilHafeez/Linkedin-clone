@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
+import ChatWindowSkeleton from '../skeleton/ChatWindowSkeleton';
 
 
 interface Message {
@@ -34,6 +35,7 @@ export default function ChatWindow({ roomId, otherUser }: { roomId: string; othe
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState<Message[]>([]);
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   const socket = useSocket();
 
   console.log(otherUser);
@@ -75,6 +77,8 @@ const fetchMessages = async () => {
     } catch (err) {
       toast.error("Failed to fetch chat messages")
       console.error('Error fetching messages:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,8 +120,12 @@ const fetchMessages = async () => {
     );
   }
 
+  if (loading) {
+    return <ChatWindowSkeleton />;
+  }
+
   return (
-    <div className="bg-zinc-800 rounded-lg h-1/2 shadow-sm border border-zinc-700 h-[500px] flex flex-col">
+    <div className="bg-zinc-900 rounded-lg h-1/2 shadow-sm border border-zinc-700 h-[500px] flex flex-col">
       
       {/* Header */}
       <div className="p-4 border-b border-zinc-700 flex items-center justify-between">

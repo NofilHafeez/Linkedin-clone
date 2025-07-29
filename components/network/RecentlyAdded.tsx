@@ -4,6 +4,7 @@ import { MessageCircle, MoreHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import RecentlyAddedSkeleton from '../skeleton/RecentlyAddedSkeleton';
 
 interface ConnectionRequest {
   id: string;
@@ -27,6 +28,7 @@ interface ConnectionRequest {
 
 export default function RecentlyAdded() {
   const [recentConnections, setRecentConnections] = useState<ConnectionRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -42,6 +44,8 @@ export default function RecentlyAdded() {
         }
       } catch (error) {
         console.error('Error fetching recent connections:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -49,6 +53,10 @@ export default function RecentlyAdded() {
       fetchRecentConnections();
     }
   }, [user?.id]);
+
+  if (loading) {
+    return <RecentlyAddedSkeleton />;
+  }
 
   return (
     <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 p-6">

@@ -32,7 +32,7 @@ export default function ProfileHeader({ searchUser }: ProfileHeaderProps) {
   const {user} = useAuth();
 
   let userId  = user?.id;
-  
+
 useEffect(() => {
   const timeout = setTimeout(() => {
     if (user.id === searchUser.id) return;
@@ -52,7 +52,7 @@ useEffect(() => {
     profileView();
   }, 3000);
 
-  // ✅ Cleanup on unmount or re-run
+  //  Cleanup on unmount or re-run
   return () => clearTimeout(timeout);
 }, [user.id, searchUser.id]);
 
@@ -126,43 +126,50 @@ const handleTextEdit = async () => {
       {/* Cover Photo */}
       <div className="h-48 bg-zinc-700 relative">
         <img
-          src={searchUser.bannerPic || '/default.jpg'}
+          src={searchUser.bannerPic || '/default-banner.jpg'}
           alt="Cover"
           className="w-full h-full object-cover"
         />
-        <button
-          className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-          onClick={() => setShowBannerImageModal(true)}
-        >
-          <Camera className="w-5 h-5" />
-        </button>
+        {user?.id === searchUser.id && (
+          <button
+            className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+            onClick={() => setShowBannerImageModal(true)}
+          >
+            <Camera className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Profile Info */}
       <div className="px-6 pb-6">
-        {/* Profile Picture */}
-        <div className="relative -mt-28 mb-4">
-          <div className="w-40 h-40 rounded-full border-1 border-white bg-gray-300 overflow-hidden">
-            <img
-              src={searchUser.profilePic || '/default.jpg'}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          </div>
-            <button
-            className="absolute bottom-2 left-30 p-2 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition-colors"
-            onClick={() => setShowProfileImageModal(true)}
-          >
-            <Camera className="w-4 h-4 text-gray-600" />
-          </button>
-        
-          <button
-                className="p-1 absolute bottom-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
-                onClick={() => setShowEditModal(true)}
-              >
-                <Edit className="w-5 h-5" />
-              </button>
+        {/* Profile Image */}
+      <div className="relative -mt-28 mb-4 px-4">
+        <div className="w-40 h-40 rounded-full border-4 border-white dark:border-zinc-900 bg-gray-300 overflow-hidden">
+          <img
+            src={searchUser.profilePic || '/default-profile.jpg'}
+            alt="Profile"
+            className="w-full h-full object-cover"
+          />
         </div>
+
+        {user?.id === searchUser.id && (
+          <>
+            <button
+              className="absolute bottom-2 left-44 p-2 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition-colors"
+              onClick={() => setShowProfileImageModal(true)}
+            >
+              <Camera className="w-4 h-4 text-gray-600" />
+            </button>
+            <button
+              className="p-1 absolute bottom-2 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => setShowEditModal(true)}
+            >
+              <Edit className="w-5 h-5" />
+            </button>
+          </>
+        )}
+      </div>
+
 
         {/* Name and Title */}
         <div className="flex flex-col items-  start justify-between mb-4">
@@ -186,6 +193,9 @@ const handleTextEdit = async () => {
             </div>
           </div>
 
+          
+           {/* Conditional Buttons */}
+        {user?.id === searchUser.id ? (
           <div className="flex items-center space-x-2 mt-4">
             <button className="px-6 py-1 font-medium bg-blue-400 text-black rounded-full hover:bg-blue-300 transition-colors">
               Open to
@@ -194,25 +204,25 @@ const handleTextEdit = async () => {
               Add profile section
             </button>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setIsFollowing(!isFollowing)}
-            className={`px-6 py-1 rounded-full transition-colors ${
-              isFollowing
-                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                : 'bg-blue-400 text-black hover:bg-blue-300'
-            }`}
-          >
-            {isFollowing ? 'Following' : 'Follow'}
-          </button>
-          <button className="px-6 py-1 border border-blue-400 text-blue-400 rounded-full hover:bg-blue-50 transition-colors">
-            <MessageCircle className="w-4 h-4 inline mr-2" />
-            Message
-          </button>
-        </div>
+        ) : (
+          <div className="flex items-center space-x-2 mt-4">
+            <button
+              onClick={() => setIsFollowing(!isFollowing)}
+              className={`px-6 py-1 rounded-full transition-colors ${
+                isFollowing
+                  ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-blue-400 text-black hover:bg-blue-300'
+              }`}
+            >
+              {isFollowing ? 'Following' : 'Follow'}
+            </button>
+            <button className="px-6 py-1 border border-blue-400 text-blue-400 rounded-full hover:bg-blue-50 transition-colors">
+              <MessageCircle className="w-4 h-4 inline mr-2" />
+              Message
+            </button>
+          </div>
+        )}
+      </div>
       </div>
 
       {/* Edit Profile Modal */}

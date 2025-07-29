@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import ConnectionRequestsSkeleton from '../skeleton/ConnectionRequestsSkeleton';
 
 interface ConnectionRequest {
   id: string;
@@ -23,6 +24,7 @@ interface ConnectionRequest {
 export default function ConnectionRequests() {
   const [requests, setRequests] = useState<ConnectionRequest[]>([]);
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   console.log('User in ConnectionRequests:', user?.id);
 
   useEffect(() => {
@@ -35,6 +37,8 @@ export default function ConnectionRequests() {
         setRequests(response.data); 
       } catch (error) {
         console.error('Error fetching connection requests:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -59,6 +63,10 @@ export default function ConnectionRequests() {
     }
   };
 
+    if (loading) {
+    return <ConnectionRequestsSkeleton />;
+  } 
+
   if (!requests.length) {
     return (
       <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 p-6 text-center">
@@ -67,6 +75,8 @@ export default function ConnectionRequests() {
       </div>
     );
   }
+
+
 
   return (
     <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 p-6">

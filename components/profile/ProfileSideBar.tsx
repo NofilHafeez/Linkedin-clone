@@ -13,8 +13,13 @@ interface Person {
   profilePic: string;
 }
 
+type ProfileSidebarProps = {
+  viewedProfile: number;
+  searchUserId: string;
+};
 
-export default function ProfileSidebar() {
+
+export default function ProfileSidebar({viewedProfile, searchUserId}: ProfileSidebarProps) {
   
     const [people, setPeople] = useState<Person[]>([]);
     const { user } = useAuth();
@@ -83,12 +88,13 @@ export default function ProfileSidebar() {
   return (
     <div className="space-y-6">
       {/* Public Profile & URL */}
-      <div className="bg-zinc-900 rounded-lg p-4">
+            {user?.id === searchUserId ? (
+               <div className="bg-zinc-900 rounded-lg p-4">
         <h3 className="font-semibold text-white mb-4">Public profile & URL</h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Your profile was viewed by</span>
-            <span className="font-semibold text-blue-600">127 people</span>
+            <span className="font-semibold text-blue-600">{viewedProfile} people</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Appeared in search</span>
@@ -99,6 +105,10 @@ export default function ProfileSidebar() {
           </button>
         </div>
       </div>
+            ) : (
+             null
+            )}
+     
 
 
        {/* People You May Know */}

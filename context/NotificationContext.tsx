@@ -31,6 +31,8 @@ interface NotificationContextType {
   notifications: Notification[];
   count: number;
   setCount: React.Dispatch<React.SetStateAction<number>>;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  loading: boolean;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -40,6 +42,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const socket = useSocket();
   const { user, setUser, fetchUser } = useAuth();
+  const [loading, setLoading] = useState(true);
  
   // Join socket room
   useEffect(() => {
@@ -105,6 +108,8 @@ useEffect(() => {
         setCount(unread.length);
       } catch (err) {
         console.error('❌ Error fetching notifications:', err);
+      } finally{ 
+        setLoading(false);
       }
     };
 
@@ -143,7 +148,7 @@ useEffect(() => {
   }, [socket, user?.id]);
 
   return (
-    <NotificationContext.Provider value={{ count, setCount, notifications }}>
+    <NotificationContext.Provider value={{ count, setCount, notifications, loading, setLoading }}>
       {children}
     </NotificationContext.Provider>
   );

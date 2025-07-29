@@ -4,6 +4,7 @@ import { Search, Edit, MoreHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import MessageSidebarSkeleton from '../skeleton/MessageSidebarSkeleton';
 
 interface ConnectedUser {
   id: string;
@@ -30,6 +31,7 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
   const [connections, setConnections] = useState<ConnectedUser[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -52,6 +54,8 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
     }
   } catch (err) {
     console.error('Error fetching connections:', err);
+  } finally {
+    setLoading(false);
   }
   };
 
@@ -61,6 +65,8 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
       setRooms(res.data);
     } catch (err) {
       console.error('Error fetching rooms:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,19 +95,15 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (loading) {
+    return <MessageSidebarSkeleton />;
+  } 
+
   return (
-    <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 h-[500px] flex flex-col">
+    <div className="bg-zinc-900 rounded-lg shadow-sm border border-zinc-700 h-full flex flex-col">
       <div className="p-4 border-b border-zinc-700">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">Messaging</h2>
-          <div className="flex items-center space-x-2">
-            <button className="p-2 text-gray-400 hover:text-white hover:bg-zinc-700 rounded-full">
-              <Edit className="w-5 h-5" />
-            </button>
-            <button className="p-2 text-gray-400 hover:text-white hover:bg-zinc-700 rounded-full">
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
-          </div>
         </div>
 
         <div className="relative">

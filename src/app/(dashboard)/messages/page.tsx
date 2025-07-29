@@ -5,10 +5,12 @@ import MessageSidebar from '@/../components/message/MessageSideBar';
 import ChatWindow from '@/../components/message/ChatWindow';
 import { useEffect, useState } from 'react';
 import { useSocket } from '../../../../context/SocketContext';
+import MessageSkeleton from '../../../../components/skeleton/MessageSidebarSkeleton';
 
 export default function MessagingPage() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [otherUser, setOtherUser] = useState<any | null>(null); 
+  const [otherUser, setOtherUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const socket = useSocket();
 

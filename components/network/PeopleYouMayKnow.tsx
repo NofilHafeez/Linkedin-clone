@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
+import PeopleYouMayKnowSkeleton from '../skeleton/PeopleYouMayKnowSkeleton';
 
 interface Person {
   id: string;
@@ -17,6 +18,7 @@ interface Person {
 
 export default function PeopleYouMayKnow() {
   const [people, setPeople] = useState<Person[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const socket = useSocket();
 
@@ -47,6 +49,8 @@ export default function PeopleYouMayKnow() {
         }
       } catch (err) {
         toast.error('Error fetching:' + (err instanceof Error ? err.message : String(err)));
+      } finally {
+        setLoading(false)
       }
     };
 
@@ -91,6 +95,10 @@ export default function PeopleYouMayKnow() {
       console.error('Error sending connection request:', error);
     }
   };
+
+  if (loading) {
+    return <PeopleYouMayKnowSkeleton />;
+  }
 
   return (
     <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 p-6">

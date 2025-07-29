@@ -4,7 +4,7 @@ import Header from '@/../components/layout/Header';
 import NotificationsList from '@/../components/notification/NotificationsList';
 import Sidebar from '../../../../components/layout/SideBar';
 
-export default function NotificationsPage() {
+export default function NotificationsPage() { 
   return (
     <div className="min-h-screen">
       <Header />

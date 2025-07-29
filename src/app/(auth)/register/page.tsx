@@ -34,7 +34,7 @@ const handleRegister = async () => {
 
     if (res.status === 200) {
       toast.success( "Registration successful! Redirecting to login page...") 
-      router.push("/feed");
+      router.push("/login");
     }
   } catch (err: any) {
     toast.error("Signup request failed:", err);

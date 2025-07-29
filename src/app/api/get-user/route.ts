@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
+  
+
     if (!user) {
       return NextResponse.json({ user: null }, { status: 404 });
     }

@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useNotification } from '../../context/NotificationContext';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import NotificationsListSkeleton from '../skeleton/NotificationsListSkeleton';
 
 
 export default function NotificationsList() {
-    const { notifications, setCount } = useNotification();
+    const { notifications, setCount, loading } = useNotification();
     const {user} = useAuth();
 
   useEffect(() => {
@@ -28,6 +29,10 @@ export default function NotificationsList() {
   if (diff < 3600) return `${Math.floor(diff / 60)}m`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
   return `${Math.floor(diff / 86400)}d`;
+}
+
+if (loading) {
+  return <NotificationsListSkeleton />;
 }
 
 

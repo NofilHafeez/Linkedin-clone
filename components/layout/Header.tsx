@@ -166,7 +166,7 @@ if (socket && user?.id) {
                       <div className="absolute right-0 p-2 mt-2 w-68 bg-zinc-900  border-gray-800 rounded-br-lg rounded-l-lg z-50">
                        
           <div className='flex gap-2'>
-            <div className="w-18 h-16 rounded-full bg-gray-300 overflow-hidden">
+            <div className="w-14 h-14 rounded-full bg-gray-300 overflow-hidden">
               <img
                 src={user?.profilePic || '/default.jpg'}
                 alt="Profile"

@@ -12,6 +12,7 @@ interface User {
   profilePic: string;
   bannerPic: string;
   location: string;
+  viewedProfile: number;
 } 
 
 export default function Sidebar() {
@@ -51,38 +52,15 @@ export default function Sidebar() {
         <div className="border-t px-6 py-3">
           <div className="flex justify-between items-center text-sm">
             <span className="text-white">Profile viewers</span>
-            <span className="text-blue-400 font-semibold">{profileViews.toLocaleString()}</span>
+            <span className="text-blue-400 font-semibold">{user.viewedProfile}</span>
           </div>
           <div className="flex justify-between items-center text-sm mt-2">
             <span className="text-white">Post impressions</span>
             <span className="text-blue-400 font-semibold">{postImpressions.toLocaleString()}</span>
           </div>
-        </div>
-        
-        <div className="border-t px-6 py-3">
-          <button className="text-sm text-white hover:text-blue-600 transition-colors">
-            Access exclusive tools & insights
-          </button>
-        </div>
+        </div>  
       </div>
-      
-      {/* Quick Links */}
-      <div className="bg-zinc-900 rounded-lg p-4">
-        <div className="space-y-3">
-          <div className="flex items-center space-x-3 text-sm text-white hover:text-blue-600 cursor-pointer transition-colors">
-            <Users className="w-4 h-4" />
-            <span>Groups</span>
-          </div>
-          <div className="flex items-center space-x-3 text-sm text-white hover:text-blue-600 cursor-pointer transition-colors">
-            <Eye className="w-4 h-4" />
-            <span>Events</span>
-          </div>
-          <div className="flex items-center space-x-3 text-sm text-white hover:text-blue-600 cursor-pointer transition-colors">
-            <Bookmark className="w-4 h-4" />
-            <span>Saved items</span>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 }

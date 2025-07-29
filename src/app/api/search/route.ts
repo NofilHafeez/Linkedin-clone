@@ -26,6 +26,7 @@ export async function GET(request: Request) {
         experience:true,
         education:true,
         skills: true,
+        viewedProfile: true,
 
       },
     });
