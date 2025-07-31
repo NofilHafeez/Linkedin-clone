@@ -113,7 +113,9 @@ export default function RightSidebar() {
   const visibleConnections = suggestedConnections.filter(item => !dismissedConnections.includes(item.id));
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col h-full">
+  {/* All your sidebar content */}
+     <div className="space-y-4">
       {/* LinkedIn News */}
       <div className="bg-zinc-900 rounded-lg  overflow-hidden">
         <div className="p-4 border-b">
@@ -196,8 +198,8 @@ export default function RightSidebar() {
 
       
       {/* Footer Links */}
-      <div className="rounded-lg  p-4">
-        <div className="text-xs text-gray-500 space-y-2">
+<div className="mt-auto sticky top-0 p-4 rounded-lg z-20">
+  <div className="text-xs text-gray-500 space-y-2">
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             <a href="/" className="hover:text-blue-600 transition-colors">About</a>
             <a href="#" className="hover:text-blue-600 transition-colors">Accessibility</a>
@@ -217,5 +219,8 @@ export default function RightSidebar() {
         </div>
       </div>
     </div>
+</div>
+
+ 
   );
 }

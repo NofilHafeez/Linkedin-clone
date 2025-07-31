@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit, Plus, Building, Calendar, X } from 'lucide-react';
+import { Plus, Building, Calendar, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import axios from 'axios';
@@ -19,9 +19,10 @@ interface Experience {
 
 interface ExpProp {
   userExperience: Experience[];
+  searchUserId: string;
 }
 
-export default function ExperienceSection({ userExperience }: ExpProp ) {
+export default function ExperienceSection({ userExperience, searchUserId }: ExpProp ) {
   const { user } = useAuth();
   const [experienceList, setExperienceList] = useState<Experience[]>(userExperience);
   const [isAdding, setIsAdding] = useState(false);
@@ -65,7 +66,6 @@ export default function ExperienceSection({ userExperience }: ExpProp ) {
 
       if (res.status === 200) {
         const newExp: Experience = {
-
           title,
           company,
           location,
@@ -107,12 +107,15 @@ export default function ExperienceSection({ userExperience }: ExpProp ) {
       <div className="bg-zinc-900 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-white">Experience</h2>
-          <button
-            onClick={() => setIsAdding(true)}
-            className="p-2 text-gray-400 hover:text-white transition"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
+          {user?.id === searchUserId && (
+            <button
+              onClick={() => setIsAdding(true)}
+              className="p-2 text-gray-400 hover:text-white transition"
+              aria-label="Add experience"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {experienceList.length === 0 && (

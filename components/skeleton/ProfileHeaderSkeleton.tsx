@@ -12,7 +12,6 @@ export default function ProfileHeaderSkeleton() {
         <div className="relative -mt-28 mb-4">
           <div className="w-40 h-40 rounded-full border-4 border-zinc-900 bg-zinc-700" />
         </div>
-
         {/* Name and Title Skeletons */}
         <div className="flex flex-col items-start justify-between mb-4 space-y-2">
           <div className="w-1/2 h-6 bg-zinc-700 rounded" />
@@ -27,13 +26,6 @@ export default function ProfileHeaderSkeleton() {
         {/* Buttons Skeleton */}
         <div className="flex items-center space-x-2 mt-4">
           <div className="w-24 h-8 bg-zinc-700 rounded-full" />
-          <div className="w-36 h-8 bg-zinc-700 rounded-full" />
-        </div>
-
-        {/* Action Buttons Skeleton */}
-        <div className="flex items-center space-x-2 mt-4">
-          <div className="w-24 h-8 bg-zinc-700 rounded-full" />
-          <div className="w-28 h-8 bg-zinc-700 rounded-full" />
         </div>
       </div>
     </div>

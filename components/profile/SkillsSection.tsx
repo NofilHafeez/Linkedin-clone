@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import axios from 'axios';
 
-export default function SkillsSection({ userSkills = [] }: { userSkills?: string[] }) {
+export default function SkillsSection({ userSkills = [], searchUserId }: { userSkills?: string[], searchUserId: string }) {
   const { user } = useAuth();
   const [skillsList, setSkillsList] = useState<string[]>(userSkills);
   const [isAdding, setIsAdding] = useState(false);
@@ -46,12 +46,15 @@ export default function SkillsSection({ userSkills = [] }: { userSkills?: string
       <div className="bg-zinc-900 rounded-lg p-6 transition-all duration-300">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-white">Skills</h2>
+        { user?.id === searchUserId && (
           <button
             onClick={() => setIsAdding(true)}
             className="p-2 text-gray-400 hover:text-white transition"
+            aria-label="Add skill"
           >
             <Plus className="w-5 h-5" />
           </button>
+        )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

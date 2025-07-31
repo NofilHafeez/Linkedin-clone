@@ -2,23 +2,10 @@
 
 
 import { useAuth } from '../../context/AuthContext';
+import Image from 'next/image';
 
-import { Camera, Users, Eye, Bookmark } from 'lucide-react';
-
-interface User {
-  id: string;
-  name: string;
-  title: string;
-  profilePic: string;
-  bannerPic: string;
-  location: string;
-  viewedProfile: number;
-} 
 
 export default function Sidebar() {
-  const profileViews = 1247;
-  const postImpressions = 3892;
-
   const { user } = useAuth();
     if (!user) return null; 
 
@@ -27,17 +14,20 @@ export default function Sidebar() {
       {/* Profile Card */}
       <div className="bg-zinc-900 rounded-lg  overflow-hidden">
         <div className="h-16 bg-zinc-700 relative">
-           <img
-            src={user.bannerPic || 'https://via.placeholder.com/800x200'}
+           <Image
+            src={user.bannerPic || '/default-banner.jpg'}
             alt="Banner"
+            fill
             className="w-full h-full object-cover"
           />
           <div className="absolute -bottom-8 left-14 transform -translate-x-1/2">
             <div className="w-16 h-16 rounded-full bg-gray-300 border-1 border-white overflow-hidden">
-              <img
+              <Image
                 src={user.profilePic || '/default.jpg'}
                 alt="Profile"
-                className="w-full h-full object-cover"
+                width={64}
+                height={64}
+                className="w-full rounded-full h-full object-cover"
               />
             </div>
           </div>
@@ -55,8 +45,6 @@ export default function Sidebar() {
             <span className="text-blue-400 font-semibold">{user.viewedProfile}</span>
           </div>
           <div className="flex justify-between items-center text-sm mt-2">
-            <span className="text-white">Post impressions</span>
-            <span className="text-blue-400 font-semibold">{postImpressions.toLocaleString()}</span>
           </div>
         </div>  
       </div>

@@ -7,7 +7,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 
-export default function AboutSection({ userBio }: { UserBio?: string }) {
+export default function AboutSection({ userBio, searchUserId }: { userBio?: string, searchUserId: string }) {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState(userBio || '');
@@ -52,12 +52,11 @@ const handleSave = async () => {
       <div className="bg-zinc-900 rounded-2xl p-6 shadow-md relative">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-white">About</h2>
-          <button
-            onClick={() => setIsEditing(true)}
-            className="p-2 text-gray-400 hover:text-white transition"
-          >
-            <Edit className="w-5 h-5" />
-          </button>
+         {user?.id === searchUserId && (
+            <button className="px-4 py-2 text-white rounded">
+              <Edit className="w-5 h-5 " onClick={() => setIsEditing(true)} />
+            </button>
+          )}
         </div>
         <p className="text-white text-sm leading-relaxed whitespace-pre-line">
           {userBio ? userBio : 'No bio available.'}

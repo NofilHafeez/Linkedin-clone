@@ -95,14 +95,7 @@ export default function ProfileSidebar({viewedProfile, searchUserId}: ProfileSid
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Your profile was viewed by</span>
             <span className="font-semibold text-blue-600">{viewedProfile} people</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Appeared in search</span>
-            <span className="font-semibold text-blue-600">89 times</span>
-          </div>
-          <button className="w-full mt-3 py-2 text-blue-600 hover:bg-blue-50 transition-colors rounded-lg text-sm font-medium">
-            View public profile
-          </button>
+          </div>  
         </div>
       </div>
             ) : (

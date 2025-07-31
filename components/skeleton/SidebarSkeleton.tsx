@@ -5,8 +5,6 @@ export default function SidebarSkeleton() {
     <div className="animate-pulse bg-zinc-800 p-4 rounded-lg space-y-3">
       <div className="h-5 bg-zinc-700 rounded mb-5  w-full mx-auto" />
       <div className="h-3 bg-zinc-700 rounded mb-3 w-full mx-auto" />
-      <div className="h-3 bg-zinc-700 rounded mb-3 w-full mx-auto" />
-      <div className="h-3 bg-zinc-700 rounded  w-full mx-auto" />
     </div>
     
      <div className="animate-pulse bg-zinc-800 p-4 rounded-lg w-full max-w-sm">

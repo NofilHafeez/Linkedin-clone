@@ -4,6 +4,7 @@ import { AuthProvider } from "../../context/AuthContext";
 import "./globals.css";
 import { SocketProvider } from "../../context/SocketContext";
 import { NotificationProvider } from "../../context/NotificationContext";
+import MobileWarning from "../../components/Warning/MobileWarning";
 import { Toaster } from 'react-hot-toast';
 
 
@@ -32,9 +33,9 @@ export default function RootLayout({
       <body
         className={`${sourceSans.variable} ${sourceMono.variable}antialiased`}
       >
-       <AuthProvider> {/* ✅ Auth must come first */}
+       <AuthProvider> 
       <SocketProvider>
-        <NotificationProvider> {/* ✅ Now safe to use useAuth() here */}
+        <NotificationProvider>
           <Toaster
   toastOptions={{
     style: {
@@ -71,7 +72,7 @@ export default function RootLayout({
     },
   }}
 />
-  
+  <MobileWarning />
           {children}
         </NotificationProvider>
       </SocketProvider>

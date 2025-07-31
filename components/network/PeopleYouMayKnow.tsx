@@ -1,11 +1,11 @@
 'use client';
 
 import { UserPlus, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
-import toast from 'react-hot-toast';
 import PeopleYouMayKnowSkeleton from '../skeleton/PeopleYouMayKnowSkeleton';
 
 interface Person {
@@ -13,8 +13,7 @@ interface Person {
   name: string;
   title: string;
   profilePic: string;
-} 
-
+}
 
 export default function PeopleYouMayKnow() {
   const [people, setPeople] = useState<Person[]>([]);
@@ -22,89 +21,85 @@ export default function PeopleYouMayKnow() {
   const { user } = useAuth();
   const socket = useSocket();
 
- const handleNotification = async (message: string, receiverId: string) => {
-    try {
-      const res = await axios.post('api/notifications', {message, senderId: user?.id, receiverId}, {withCredentials: true});
-    }catch (err) {
-        toast.error("Failed sending notifications")
-        console.error('Error sending notification:');
-      }
-
-    }
-  
-
-  useEffect(() => {
+  const fetchPeople = useCallback(async () => {
     if (!user?.id) return;
 
-    const fetchPeople = async () => {
-      try {
-        const response = await axios.get(`/api/connections/?userId=${user.id}`, {
-          withCredentials: true,
-        });
+    setLoading(true);
+    try {
+      const response = await axios.get(`/api/connections/?userId=${user.id}`, {
+        withCredentials: true,
+      });
 
-        if (response.data) {
-          setPeople(response.data.similarUsers || []);
-        } else {
-          toast.error('No data received from API');
-        }
-      } catch (err) {
-        toast.error('Error fetching:' + (err instanceof Error ? err.message : String(err)));
-      } finally {
-        setLoading(false)
+      if (response.data?.similarUsers) {
+        setPeople(response.data.similarUsers);
+      } else {
+        toast.error('No suggestions received');
       }
-    };
-
-    fetchPeople();
+    } catch (err) {
+      toast.error('Error fetching suggestions');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, [user?.id]);
 
-  const sendConnectionRequest = async (receiverId: string) => {
-    if (!user?.id) {
-      toast.error('User ID is missing.');
-      return;
-    }
+  useEffect(() => {
+    fetchPeople();
+  }, [fetchPeople]);
 
-    try {
-      const response = await axios.post(
-        '/api/connections/request',
-        {
-          requesterId: user.id,
-          receiverId: receiverId,
-        },
-        { withCredentials: true }
-      );
+  const sendConnectionRequest = useCallback(
+    async (receiverId: string) => {
+      if (!user?.id || receiverId === user.id) return;
 
-      if (response.status === 200) {
-        if(receiverId !== user.id)  {// Avoid self-notification
-        handleNotification("New connection request from", receiverId); 
-         if (socket) {
-        socket.emit('send-connect-noti', {
-            message: `You have a new connection request from ${user?.name}`,
-            receiverId: receiverId,
+      try {
+        const response = await axios.post(
+          '/api/connections/request',
+          { requesterId: user.id, receiverId },
+          { withCredentials: true }
+        );
+
+        if (response.status === 200) {
+          toast.success('Connection request sent!');
+
+          // Send server-side notification
+          await axios.post(
+            '/api/notifications',
+            {
+              message: `You have a new connection request from ${user.name}`,
+              senderId: user.id,
+              receiverId,
+            },
+            { withCredentials: true }
+          );
+
+          // Emit via socket
+          socket?.emit('send-connect-noti', {
+            message: `You have a new connection request from ${user.name}`,
+            receiverId,
             sender: {
               id: user.id,
               name: user.name,
               profilePic: user.profilePic,
             },
           });
-      }
-  }
-        toast.success('Connection request sended!!');
-      }
-    } catch (error) {
-      toast.error('Failed sending connection request')
-      console.error('Error sending connection request:', error);
-    }
-  };
 
-  if (loading) {
-    return <PeopleYouMayKnowSkeleton />;
-  }
+          // Optionally remove suggested person
+          setPeople((prev) => prev.filter((p) => p.id !== receiverId));
+        }
+      } catch (err) {
+        toast.error('Failed to send request');
+        console.error('Error sending request:', err);
+      }
+    },
+    [user, socket]
+  );
+
+  if (loading) return <PeopleYouMayKnowSkeleton />;
 
   return (
     <div className="bg-zinc-800 rounded-lg shadow-sm border border-zinc-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-white">People you may know</h2>
-        <button className="text-blue-400 hover:underline text-sm">See all</button>
       </div>
 
       {people.length === 0 ? (
@@ -124,7 +119,10 @@ export default function PeopleYouMayKnow() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <button className="text-gray-400 hover:text-gray-300">
+                <button
+                  className="text-gray-400 hover:text-gray-300"
+                  aria-label="Remove suggestion"
+                >
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -137,7 +135,7 @@ export default function PeopleYouMayKnow() {
               </div>
 
               <button
-                onClick={() => {sendConnectionRequest(person.id); handleNotification(`You have a new connection request from ${user?.name}`, person.id)}}
+                onClick={() => sendConnectionRequest(person.id)}
                 className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-blue-600 text-blue-400 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-sm"
               >
                 <UserPlus className="w-4 h-4" />
@@ -150,4 +148,3 @@ export default function PeopleYouMayKnow() {
     </div>
   );
 }
- 

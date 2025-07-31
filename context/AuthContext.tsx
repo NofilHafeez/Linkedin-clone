@@ -1,31 +1,14 @@
 'use client';
 
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import axios from 'axios';
-export enum Status {
-  online = 'online',
-  offline = 'offline',
-  away = 'away',
-}
+import {User} from '@/types/index';
 
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  profilePic?: string;
-  bio?: string;
-  status: Status;
-  viewedProfile: number;
-  title: String;
-  bannerPic: string;
-  location: string;
-} | null;
 
 interface AuthContextType {
-  user: User;
-  setUser: React.Dispatch<React.SetStateAction<User>>;
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   fetchUser: () => Promise<void>;
   loading: boolean;
 }
@@ -35,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {

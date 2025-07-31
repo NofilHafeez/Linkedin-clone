@@ -127,7 +127,7 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
                   onClick={() => handleSearchSelect(c.id)}
                   className="p-2 hover:bg-zinc-600 cursor-pointer flex items-center space-x-2"
                 >
-                  <img src={c.profilePic || '/default-profile.png'} alt={c.name} className="w-8 h-8 rounded-full object-cover" />
+                  <img src={c.profilePic || '/default.jpg'} alt={c.name} className="w-8 h-8 rounded-full object-cover" />
                   <span className="text-white text-sm">{c.name}</span>
                 </div>
               ))}
@@ -149,7 +149,7 @@ export default function MessageSidebar({ onRoomSelect }: { onRoomSelect: (roomId
                 onClick={() => onRoomSelect(room.id, otherUser)}
                 className="p-4 border-b border-zinc-700 hover:bg-zinc-700 cursor-pointer flex items-center space-x-3"
               >
-                <img src={otherUser.profilePic || '/default-profile.png'} alt={otherUser.name} className="w-10 h-10 rounded-full object-cover" />
+                <img src={otherUser.profilePic || '/default.jpg'} alt={otherUser.name} className="w-10 h-10 rounded-full object-cover" />
                 <div>
                   <h3 className="text-white font-medium truncate">{otherUser.name}</h3>
                   <p className="text-gray-400 text-sm truncate">{otherUser.title}</p>
