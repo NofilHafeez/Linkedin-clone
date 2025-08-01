@@ -25,8 +25,8 @@ export async function GET(request: Request, { params }: { params: { postId: stri
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { postId: string } }) {
-  const { postId } = params;
+export async function POST(request: NextRequest,  context: { params: { postId: string } }) {
+  const { postId } = context.params;
   const { userId } = await request.json();
 
   if (!postId || !userId) {

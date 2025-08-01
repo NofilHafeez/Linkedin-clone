@@ -11,7 +11,7 @@ import PeopleYouMayKnowSkeleton from '../skeleton/PeopleYouMayKnowSkeleton';
 interface Person {
   id: string;
   name: string;
-  title: string;
+  title: string; 
   profilePic: string;
 }
 

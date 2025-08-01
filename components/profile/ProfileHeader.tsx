@@ -3,15 +3,18 @@
 import {
   Camera, Edit, MessageCircle, X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { User } from '@/types/user';
+import { useSocket } from '../../context/SocketContext';
+import Link from 'next/link';
 
-export type MinimalUser = Pick<
+
+export type MinimalUser = Pick< 
   User,
-  "id" | "name" | "title" | "location" | "profilePic" | "bannerPic"
+  "id" | "name" | "title" | "location" | "profilePic" | "bannerPic" | "receivedConnections"
 >;
 
 interface ProfileHeaderProps {
@@ -28,6 +31,7 @@ export default function ProfileHeader({ searchUser }: ProfileHeaderProps) {
   const [editedTitle, setEditedTitle] = useState(searchUser.title);
   const [editedLocation, setEditedLocation] = useState(searchUser.location);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const socket = useSocket();
 
   // Trigger profile view logging
   useEffect(() => {
@@ -86,6 +90,51 @@ export default function ProfileHeader({ searchUser }: ProfileHeaderProps) {
     }
   };
 
+  const sendConnectionRequest = useCallback(
+      async (receiverId: string) => {
+        if (!user?.id || receiverId === user.id) return;
+  
+        try {
+          const response = await axios.post(
+            '/api/connections/request',
+            { requesterId: user.id, receiverId },
+            { withCredentials: true }
+          );
+  
+          if (response.status === 200) {
+            toast.success('Connection request sent!');
+  
+            // Send server-side notification
+            await axios.post(
+              '/api/notifications',
+              {
+                message: `You have a new connection request from ${user.name}`,
+                senderId: user.id,
+                receiverId,
+              },
+              { withCredentials: true }
+            );
+  
+            // Emit via socket
+            socket?.emit('send-connect-noti', {
+              message: `You have a new connection request from ${user.name}`,
+              receiverId,
+              sender: {
+                id: user.id,
+                name: user.name,
+                profilePic: user.profilePic,
+              },
+            });
+          }
+        } catch (err) {
+          toast.error('Failed to send request');
+          console.error('Error sending request:', err);
+        }
+      },
+      [user, socket]
+    );
+  
+  const connected = searchUser.receivedConnections?.filter(conn => conn.requesterId === user?.id) || [];
   const isOwnProfile = user?.id === searchUser.id;
 
   return (
@@ -148,19 +197,29 @@ export default function ProfileHeader({ searchUser }: ProfileHeaderProps) {
           {!isOwnProfile && (
             <div className="flex items-center space-x-2 mt-4">
               <button
-                onClick={() => setIsFollowing(!isFollowing)}
+                onClick={() => {setIsFollowing(!isFollowing); sendConnectionRequest(searchUser.id)}}
                 className={`px-6 py-1 rounded-full ${
                   isFollowing
                     ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     : 'bg-blue-400 text-black hover:bg-blue-300'
                 }`}
               >
-                {isFollowing ? 'Connected' : 'Connect'}
+                {isFollowing || connected ? 'Connected' : 'Connect'}
               </button>
-              <button className="px-6 py-1 border border-blue-400 text-blue-400 rounded-full hover:bg-blue-50">
-                <MessageCircle className="w-4 h-4 inline mr-2" />
-                Message
-              </button>
+              <Link href="/messages">
+              <button
+                  onClick={(e) => {
+                    if (!connected.length) {
+                      e.preventDefault(); //  prevent navigating to /message
+                      toast.error('First connect with the profile');
+                    }
+                  }}
+                  className="px-6 py-1 border border-blue-400 text-blue-400 rounded-full hover:bg-blue-50"
+                >
+                  <MessageCircle className="w-4 h-4 inline mr-2" />
+                  Message
+                </button>
+              </Link>
             </div>
           )}
         </div>

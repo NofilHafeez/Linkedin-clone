@@ -27,6 +27,7 @@ export async function GET(request: Request) {
         education:true,
         skills: true,
         viewedProfile: true,
+        receivedConnections:true
 
       },
     });

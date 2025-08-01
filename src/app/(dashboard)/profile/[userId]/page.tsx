@@ -97,6 +97,7 @@ export default function ProfilePage() {
                 location: searchUser.location,
                 profilePic: searchUser.profilePic ?? '',
                 bannerPic: searchUser.bannerPic ?? '',
+                receivedConnections: searchUser.receivedConnections
               }}
             />
 

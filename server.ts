@@ -28,17 +28,17 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send-like-noti', ({ message, receiverId, sender }) => {
-    console.log(`📨 Sending to ${receiverId}: ${message}`);
+    // console.log(`📨 Sending to ${receiverId}: ${message}`);
     io.to(receiverId).emit('like-noti-receive', { message, sender, receiverId });
   });
 
    socket.on('send-comment-noti', ({ message, receiverId, sender }) => {
-    console.log(`📨 Sending to ${receiverId}: ${message}`);
+    // console.log(`📨 Sending to ${receiverId}: ${message}`);
     io.to(receiverId).emit('comment-noti-receive', { message, sender, receiverId  });
   });
 
   socket.on('send-connect-noti', ({ message, receiverId, sender }) => {
-    console.log(`📨 Sending to ${receiverId}: ${message}`);
+    // console.log(`📨 Sending to ${receiverId}: ${message}`);
     io.to(receiverId).emit('connect-noti-receive', { message, sender, receiverId });
   });
 
@@ -58,7 +58,7 @@ io.on('connection', (socket) => {
  
   socket.on('send-message', (data) => {
     const { roomId } = data;
-    console.log('Message:', data);  
+    // console.log('Message:', data);  
 
     // Send to everyone in the room EXCEPT sender
     socket.to(roomId).emit('receive-message', data);

@@ -90,11 +90,6 @@ useEffect(() => {
 }, [socket, user?.id]);
 
 
-
-
-
-  
-
   // Fetch notifications initially
   useEffect(() => {
     if (!user?.id) return;
